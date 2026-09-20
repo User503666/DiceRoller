@@ -1,917 +1,806 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Roll for Dinner - D&D Meal Stle Decider</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roll for Dinner - D&D Meal Decider</title>
+  <meta name="description" content="A tabletop RPG-themed interactive web app to decide what to eat!">
+  <meta name="theme-color" content="#121216">
 
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Roll4Dinner">
-    <meta name="description" content="Roll a D6 and D20 for Home Cooking, or D8 and D6 for Take-Out!">
+  <!-- Manifest & Favicon (Inlined Data URI Manifest for PWA) -->
+  <link rel="manifest" id="pwa-manifest">
 
-    <!-- Tailwind CSS & Lucide Icons -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Dynamic PWA Manifest Placeholder -->
-    <link rel="manifest" id="manifest-placeholder">
-
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0b0f19;
-            color: #f8fafc;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            cinzel: ['Cinzel', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            gold: {
+              300: '#fde047',
+              400: '#facc15',
+              500: '#eab308',
+              600: '#ca8a04',
+              700: '#a16207',
+            },
+            parchment: '#fef3c7',
+            dndBg: '#121216',
+            dndCard: '#1a1b23',
+            dndBorder: '#373a4b',
+            dndRed: '#991b1b',
+            dndRedHover: '#7f1d1d'
+          },
+          animation: {
+            'dice-shake': 'shake 0.5s ease-in-out infinite',
+            'glow-pulse': 'glow 2s ease-in-out infinite',
+            'crit-flash': 'crit 0.8s ease-out',
+          },
+          keyframes: {
+            shake: {
+              '0%, 100%': { transform: 'rotate(0deg) scale(1)' },
+              '20%': { transform: 'rotate(-12deg) scale(1.1)' },
+              '40%': { transform: 'rotate(10deg) scale(1.1)' },
+              '60%': { transform: 'rotate(-8deg) scale(1.05)' },
+              '80%': { transform: 'rotate(6deg) scale(1.05)' },
+            },
+            glow: {
+              '0%, 100%': { filter: 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.4))' },
+              '50%': { filter: 'drop-shadow(0 0 25px rgba(234, 179, 8, 0.9))' },
+            },
+            crit: {
+              '0%': { transform: 'scale(0.8)', opacity: '0' },
+              '50%': { transform: 'scale(1.25)', opacity: '1' },
+              '100%': { transform: 'scale(1)', opacity: '1' },
+            }
+          }
         }
+      }
+    }
+  </script>
 
-        .font-cinzel {
-            font-family: 'Cinzel', serif;
-        }
-
-        /* Glassmorphism Styles */
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-
-        .glass-card {
-            background: rgba(30, 41, 59, 0.65);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .glass-takeout {
-            background: rgba(88, 28, 135, 0.25);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(168, 85, 247, 0.35);
-        }
-
-        /* Dice Shaking Animation */
-        @keyframes dice-tumble {
-            0% { transform: scale(1) rotate(0deg) translateY(0); }
-            20% { transform: scale(1.15) rotate(-15deg) translateY(-8px); }
-            40% { transform: scale(0.9) rotate(15deg) translateY(4px); }
-            60% { transform: scale(1.2) rotate(-10deg) translateY(-4px); }
-            80% { transform: scale(0.95) rotate(10deg) translateY(2px); }
-            100% { transform: scale(1) rotate(0deg) translateY(0); }
-        }
-
-        .animate-shake {
-            animation: dice-tumble 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-        }
-
-        /* Objection Slam Animation */
-        @keyframes objection-slam {
-            0% { transform: scale(0.7) rotate(-8deg); opacity: 0; }
-            50% { transform: scale(1.1) rotate(3deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        .animate-objection {
-            animation: objection-slam 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        /* Hide scrollbars */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+  <style>
+    body {
+      background-color: #121216;
+      color: #e2e8f0;
+      background-image: radial-gradient(circle at 50% 20%, #202231 0%, #121216 80%);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1a1b23;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #373a4b;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #ca8a04;
+    }
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #854d0e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gold-border {
+      border-image: linear-gradient(to bottom, #ca8a04, #854d0e) 1;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-amber-500 selection:text-slate-900">
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-gold-500 selection:text-black">
 
-    <!-- Header Navbar -->
-    <header class="w-full glass-panel sticky top-0 z-40 px-4 py-3 border-b border-amber-500/20 shadow-lg">
-        <div class="max-w-md mx-auto flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/20 border border-amber-400/40 font-cinzel font-black text-xl">
-                    🎲
-                </div>
-                <div>
-                    <h1 class="font-cinzel font-black text-lg text-amber-400 tracking-wider leading-none">Roll for Dinner</h1>
-                    <p class="text-[11px] text-slate-400 font-medium">Home Cooked & Take-Out Decider</p>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-2">
-                <button id="btn-open-menu" class="p-2.5 rounded-xl bg-slate-800/90 text-amber-400 hover:text-amber-300 hover:bg-slate-700 border border-amber-500/30 transition flex items-center space-x-1 text-xs font-semibold">
-                    <i data-lucide="book-open" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">Menu</span>
-                </button>
-                <button id="btn-reset" class="p-2.5 rounded-xl bg-slate-800/90 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700 transition" title="Reset Session">
-                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                </button>
-            </div>
+  <header class="w-full border-b border-dndBorder/60 bg-dndCard/80 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-gold-400 to-gold-700 flex items-center justify-center shadow-lg shadow-gold-500/10 text-black font-cinzel font-black text-xl">
+          🎲
         </div>
-    </header>
-
-    <!-- Main Interactive Container -->
-    <main class="w-full max-w-md mx-auto px-4 py-5 flex-1 flex flex-col justify-between space-y-5">
-
-        <!-- Master Roll Action Button -->
-        <section>
-            <button id="btn-roll-both" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-slate-950 font-cinzel font-black text-lg tracking-widest shadow-xl shadow-amber-500/20 active:scale-98 transition flex items-center justify-center space-x-2 border border-amber-300/50">
-                <i data-lucide="dices" class="w-6 h-6 stroke-[2.5]"></i>
-                <span>ROLL BOTH (D6 + D20)</span>
-            </button>
-        </section>
-
-        <!-- Primary Dice Displays Grid (D6 and D20) -->
-        <section class="grid grid-cols-2 gap-4">
-            <!-- D6 Main Version Die Card -->
-            <div id="card-d6" class="glass-card p-4 rounded-2xl border border-amber-500/20 flex flex-col items-center justify-between text-center relative overflow-hidden">
-                <span class="text-[11px] font-bold uppercase font-cinzel text-amber-400/90 tracking-wider">D6 • Cook Version</span>
-                
-                <div id="box-d6" class="my-3 w-20 h-20 rounded-2xl bg-slate-900/90 border border-amber-500/40 flex items-center justify-center shadow-inner cursor-pointer hover:border-amber-400 transition" title="Click to roll D6 only">
-                    <span id="num-d6" class="font-cinzel font-black text-4xl text-amber-400">?</span>
-                </div>
-
-                <div class="w-full space-y-2">
-                    <span id="label-d6" class="block text-xs font-semibold text-slate-300 truncate">Roll D6</span>
-                    <button id="btn-roll-d6" class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-amber-300 transition flex items-center justify-center space-x-1">
-                        <i data-lucide="dices" class="w-3.5 h-3.5"></i>
-                        <span>Roll D6</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- D20 Main Dish Die Card -->
-            <div id="card-d20" class="glass-card p-4 rounded-2xl border border-indigo-500/20 flex flex-col items-center justify-between text-center relative overflow-hidden">
-                <span class="text-[11px] font-bold uppercase font-cinzel text-indigo-400/90 tracking-wider">D20 • Cook Meal</span>
-                
-                <div id="box-d20" class="my-3 w-20 h-20 rounded-2xl bg-slate-900/90 border border-indigo-500/40 flex items-center justify-center shadow-inner cursor-pointer hover:border-indigo-400 transition" title="Click to roll D20 only">
-                    <span id="num-d20" class="font-cinzel font-black text-4xl text-indigo-400">?</span>
-                </div>
-
-                <div class="w-full space-y-2">
-                    <span id="label-d20" class="block text-xs font-semibold text-slate-300 truncate">Roll D20</span>
-                    <button id="btn-roll-d20" class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-indigo-300 transition flex items-center justify-center space-x-1">
-                        <i data-lucide="dices" class="w-3.5 h-3.5"></i>
-                        <span>Roll D20</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Primary Result Display Card -->
-        <section id="result-card" class="glass-panel p-5 rounded-2xl border border-amber-500/30 shadow-2xl transition-all duration-300 min-h-[140px] flex flex-col justify-between relative overflow-hidden">
-            <div id="result-placeholder" class="text-center py-6 text-slate-500">
-                <i data-lucide="utensils-crossed" class="w-8 h-8 mx-auto mb-2 opacity-40 text-amber-400"></i>
-                <p class="text-xs font-medium">Cast the dice to reveal tonight's meal!</p>
-            </div>
-
-            <div id="result-content" class="hidden space-y-3 z-10">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span id="result-version-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase font-cinzel">
-                        Version 1 • Option #1
-                    </span>
-                    <span id="takeout-flag" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 animate-pulse flex items-center space-x-1">
-                        <span>🛵 TAKE-OUT TRIGGERED</span>
-                    </span>
-                </div>
-
-                <div>
-                    <h2 id="result-title" class="text-2xl font-black text-white font-cinzel leading-tight tracking-wide">
-                        Meal Name
-                    </h2>
-                    <p id="result-desc" class="text-xs text-slate-400 mt-1">
-                        Selected from Version menu list.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Trigger Take-Out Sub-Roller Button Banner (Appears when Take-out is rolled) -->
-        <div id="takeout-trigger-banner" class="hidden animate-bounce">
-            <button id="btn-open-takeout-roller" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-indigo-600 text-white font-cinzel font-black text-sm tracking-widest shadow-lg shadow-purple-500/30 border border-purple-300/50 flex items-center justify-center space-x-2">
-                <i data-lucide="store" class="w-5 h-5"></i>
-                <span>ROLL FOR TAKE-OUT RESTAURANT (D8 + D6)</span>
-                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </button>
+        <div>
+          <h1 class="font-cinzel font-bold text-lg md:text-xl text-gold-400 leading-none">Roll For Dinner</h1>
+          <p class="text-xs text-gray-400 font-medium">D&D Tabletop Meal Decider</p>
         </div>
+      </div>
 
-        <!-- Primary Objections Section -->
-        <section class="glass-panel p-4 rounded-2xl border border-red-900/50 bg-red-950/10 space-y-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="shield-alert" class="w-5 h-5 text-red-400"></i>
-                    <h3 class="font-cinzel font-bold text-xs text-red-300 tracking-wider">OBJECT TO HOME COOKING!</h3>
-                </div>
-                <div class="flex items-center space-x-1.5 text-[11px] bg-slate-900/90 px-3 py-1 rounded-full border border-slate-800">
-                    <span class="text-slate-400">Objections:</span>
-                    <span id="objection-count" class="font-bold text-amber-400">0</span>
-                </div>
-            </div>
+      <div class="flex items-center space-x-2">
+        <button id="pwa-install-btn" class="hidden px-3 py-1.5 text-xs font-semibold rounded-lg bg-gold-500 text-black hover:bg-gold-400 transition-colors flex items-center space-x-1 shadow-md">
+          <span>📲</span> <span>Install App</span>
+        </button>
+        <button id="open-grimoire-btn" class="px-3.5 py-1.5 text-xs md:text-sm font-semibold rounded-lg bg-dndBorder/60 hover:bg-dndBorder border border-gold-600/30 text-gold-300 transition-all flex items-center space-x-1.5">
+          <span>📜</span> <span>Grimoire</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-            <!-- Granular Objection Controls -->
-            <div class="grid grid-cols-2 gap-2">
-                <button id="btn-object-d6" disabled class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-red-900/60 to-red-800/80 disabled:opacity-30 disabled:cursor-not-allowed hover:from-red-800 hover:to-red-700 text-white font-cinzel font-bold text-xs tracking-wide border border-red-500/30 active:scale-95 transition flex items-center justify-center space-x-1.5">
-                    <i data-lucide="swords" class="w-3.5 h-3.5 text-red-300"></i>
-                    <span>Object D6</span>
-                </button>
-
-                <button id="btn-object-d20" disabled class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-red-900/60 to-red-800/80 disabled:opacity-30 disabled:cursor-not-allowed hover:from-red-800 hover:to-red-700 text-white font-cinzel font-bold text-xs tracking-wide border border-red-500/30 active:scale-95 transition flex items-center justify-center space-x-1.5">
-                    <i data-lucide="swords" class="w-3.5 h-3.5 text-red-300"></i>
-                    <span>Object D20</span>
-                </button>
-            </div>
-
-            <button id="btn-object-both" disabled class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 disabled:opacity-30 disabled:cursor-not-allowed hover:from-red-500 hover:to-rose-500 text-white font-cinzel font-black text-xs tracking-widest shadow-lg shadow-red-950/50 border border-red-400/40 active:scale-95 transition flex items-center justify-center space-x-2">
-                <i data-lucide="flame" class="w-4 h-4"></i>
-                <span>OBJECT & REROLL BOTH!</span>
-            </button>
-        </section>
-
-    </main>
-
-    <!-- Take-Out Sub-Roller Modal Container (D8 & D6) -->
-    <div id="modal-takeout" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 hidden">
-        <div class="glass-takeout w-full max-w-md rounded-2xl border border-purple-500/40 max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
-            
-            <!-- Modal Header -->
-            <div class="p-4 border-b border-purple-500/30 flex justify-between items-center bg-purple-950/80">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-lg bg-purple-600/30 border border-purple-400/50 flex items-center justify-center text-lg">
-                        🛵
-                    </div>
-                    <div>
-                        <h2 class="font-cinzel font-bold text-base text-purple-200">Roll For Take-Out!</h2>
-                        <p class="text-[10px] text-purple-300/80">Roll D8 (Version) + D6 (Restaurant)</p>
-                    </div>
-                </div>
-                <button id="btn-close-takeout" class="p-1.5 rounded-lg hover:bg-purple-900/50 text-purple-300 hover:text-white transition">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- Modal Content Body -->
-            <div class="p-4 space-y-4 overflow-y-auto no-scrollbar">
-                
-                <!-- Roll Both Takeout Dice Button -->
-                <button id="btn-roll-takeout-both" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600 hover:from-purple-400 hover:to-fuchsia-400 text-slate-950 font-cinzel font-black text-sm tracking-widest shadow-lg shadow-purple-500/20 active:scale-98 transition flex items-center justify-center space-x-2 border border-purple-200/50">
-                    <i data-lucide="dices" class="w-5 h-5 stroke-[2.5]"></i>
-                    <span>ROLL TAKE-OUT (D8 + D6)</span>
-                </button>
-
-                <!-- D8 and D6 Dice Display Grid -->
-                <div class="grid grid-cols-2 gap-3">
-                    <!-- D8 Card -->
-                    <div class="bg-slate-900/80 p-3 rounded-xl border border-purple-500/30 flex flex-col items-center justify-between text-center">
-                        <span class="text-[10px] font-bold uppercase font-cinzel text-purple-300">D8 • Version (1-8)</span>
-                        <div id="box-d8" class="my-2 w-16 h-16 rounded-xl bg-purple-950/60 border border-purple-400/40 flex items-center justify-center shadow-inner cursor-pointer hover:border-purple-300 transition">
-                            <span id="num-d8" class="font-cinzel font-black text-3xl text-purple-300">?</span>
-                        </div>
-                        <span id="label-d8" class="block text-[11px] font-semibold text-slate-300 mb-2 truncate w-full">Roll D8</span>
-                        <button id="btn-roll-d8" class="w-full py-1.5 px-2 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-[11px] font-bold text-purple-300 border border-purple-500/40 transition">
-                            Roll D8
-                        </button>
-                    </div>
-
-                    <!-- D6 Take-Out Card -->
-                    <div class="bg-slate-900/80 p-3 rounded-xl border border-fuchsia-500/30 flex flex-col items-center justify-between text-center">
-                        <span class="text-[10px] font-bold uppercase font-cinzel text-fuchsia-300">D6 • Restaurant (1-6)</span>
-                        <div id="box-takeout-d6" class="my-2 w-16 h-16 rounded-xl bg-fuchsia-950/60 border border-fuchsia-400/40 flex items-center justify-center shadow-inner cursor-pointer hover:border-fuchsia-300 transition">
-                            <span id="num-takeout-d6" class="font-cinzel font-black text-3xl text-fuchsia-300">?</span>
-                        </div>
-                        <span id="label-takeout-d6" class="block text-[11px] font-semibold text-slate-300 mb-2 truncate w-full">Roll D6</span>
-                        <button id="btn-roll-takeout-d6" class="w-full py-1.5 px-2 rounded-lg bg-fuchsia-950/80 hover:bg-fuchsia-900 text-[11px] font-bold text-fuchsia-300 border border-fuchsia-500/40 transition">
-                            Roll D6
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Take-Out Result Outcome Card -->
-                <div id="takeout-result-card" class="bg-slate-950/90 p-4 rounded-xl border border-purple-500/40 min-h-[100px] flex flex-col justify-center text-center">
-                    <div id="takeout-placeholder" class="text-purple-300/60 text-xs py-2">
-                        Roll the D8 & D6 to decide where to order take-out!
-                    </div>
-                    <div id="takeout-content" class="hidden space-y-1">
-                        <span id="takeout-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 uppercase font-cinzel">
-                            Ver 1 • Choice #1
-                        </span>
-                        <h3 id="takeout-restaurant-name" class="text-xl font-black text-white font-cinzel leading-snug">
-                            Restaurant Name
-                        </h3>
-                    </div>
-                </div>
-
-                <!-- Take-Out Objections Section -->
-                <div class="bg-red-950/20 p-3 rounded-xl border border-red-900/40 space-y-2">
-                    <div class="flex justify-between items-center text-xs font-cinzel font-bold text-red-300">
-                        <span>OBJECT TO TAKE-OUT!</span>
-                        <span class="text-[10px] text-slate-400">Rerolls choice</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="btn-object-d8" disabled class="py-2 px-2 rounded-lg bg-red-950/80 hover:bg-red-900 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold font-cinzel text-red-200 border border-red-500/30 transition">
-                            Object D8 (Ver)
-                        </button>
-                        <button id="btn-object-takeout-d6" disabled class="py-2 px-2 rounded-lg bg-red-950/80 hover:bg-red-900 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold font-cinzel text-red-200 border border-red-500/30 transition">
-                            Object D6 (Rest)
-                        </button>
-                    </div>
-
-                    <button id="btn-object-takeout-both" disabled class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-black font-cinzel text-white shadow transition">
-                        OBJECT & REROLL BOTH TAKE-OUT DICE
-                    </button>
-                </div>
-
-            </div>
-        </div>
+  <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-6 md:py-10 flex flex-col items-center">
+    
+    <!-- Hero / Description Banner -->
+    <div class="text-center mb-8 max-w-xl">
+      <h2 class="font-cinzel text-2xl md:text-3xl font-bold gold-gradient-text mb-2">What Shall We Feast Upon?</h2>
+      <p class="text-sm text-gray-400">Roll the D6 (Version) & D20 (Meal) to dictate your culinary destiny. If the outcome displeases the party, summon an <strong>Objection!</strong></p>
     </div>
 
-    <!-- Menu Browser Drawer / Modal -->
-    <div id="modal-menu" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 hidden">
-        <div class="glass-panel w-full max-w-md rounded-2xl border border-amber-500/30 max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            
-            <!-- Modal Header -->
-            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="book-marked" class="w-5 h-5 text-amber-400"></i>
-                    <h2 class="font-cinzel font-bold text-base text-amber-300">Quest Meal Grimoire</h2>
-                </div>
-                <button id="btn-close-menu" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
+    <!-- MAIN ROLLER CARD -->
+    <div class="w-full bg-dndCard/90 border border-gold-600/40 rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden mb-10">
+      
+      <!-- Subtle Decorative Accent -->
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl pointer-events-none"></div>
 
-            <!-- Category Mode Switcher (Home Cooked vs Take-out) -->
-            <div class="grid grid-cols-2 p-2 bg-slate-950 border-b border-slate-800 gap-1 text-xs font-cinzel font-bold">
-                <button id="tab-mode-home" class="py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40">Home Cooking (6x20)</button>
-                <button id="tab-mode-takeout" class="py-2 rounded-lg text-slate-400 hover:text-white">Take-Out (8x6)</button>
-            </div>
-
-            <!-- Version Selector Tabs -->
-            <div id="menu-version-tabs" class="flex overflow-x-auto no-scrollbar border-b border-slate-800 bg-slate-950/60 p-1 space-x-1">
-                <!-- JS Populates Version Tabs based on Mode -->
-            </div>
-
-            <!-- Menu Content List -->
-            <div id="menu-items-list" class="p-4 overflow-y-auto space-y-2 flex-1 no-scrollbar bg-slate-900/40">
-                <!-- JS dynamically renders options here -->
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="p-3 border-t border-slate-800 text-center bg-slate-950/80">
-                <p id="menu-footer-note" class="text-[11px] text-slate-400">Home Cooked Menu Options</p>
-            </div>
+      <!-- Dice Displays Section -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+        
+        <!-- D6 Version Box -->
+        <div class="bg-dndBg/80 border border-dndBorder rounded-xl p-5 flex flex-col items-center justify-center relative shadow-inner group">
+          <span class="text-xs uppercase font-cinzel text-gold-500 tracking-wider font-bold mb-1">D6 • Menu Version</span>
+          <div id="d6-display" class="text-4xl md:text-5xl font-cinzel font-extrabold text-gold-400 my-2 transition-all duration-300 flex items-center justify-center min-h-[60px]">
+            <span class="text-gray-600 text-3xl">?</span>
+          </div>
+          <span id="d6-subtext" class="text-xs text-gray-400 font-medium text-center">Version 1 - 6</span>
         </div>
+
+        <!-- D20 Meal Box -->
+        <div class="bg-dndBg/80 border border-dndBorder rounded-xl p-5 flex flex-col items-center justify-center relative shadow-inner group">
+          <span class="text-xs uppercase font-cinzel text-gold-500 tracking-wider font-bold mb-1">D20 • Meal Slot</span>
+          <div id="d20-display" class="text-4xl md:text-5xl font-cinzel font-extrabold text-gold-400 my-2 transition-all duration-300 flex items-center justify-center min-h-[60px]">
+            <span class="text-gray-600 text-3xl">?</span>
+          </div>
+          <span id="d20-subtext" class="text-xs text-gray-400 font-medium text-center">Meal 1 - 20</span>
+        </div>
+
+      </div>
+
+      <!-- Result Banner -->
+      <div id="result-container" class="min-h-[110px] bg-dndBg/90 border border-gold-500/30 rounded-xl p-5 flex flex-col items-center justify-center text-center transition-all mb-8 shadow-md">
+        <span class="text-xs font-cinzel uppercase tracking-widest text-gray-400 mb-1">Destined Outcome</span>
+        <div id="result-title" class="font-cinzel text-xl md:text-2xl font-bold text-white mb-1">
+          Ready to Roll for Initiative!
+        </div>
+        <div id="result-description" class="text-xs md:text-sm text-gold-400 font-medium">
+          Click the button below to cast the fate dice.
+        </div>
+      </div>
+
+      <!-- Action Buttons (Main Roll & Objections) -->
+      <div class="flex flex-col gap-3">
+        <button id="main-roll-btn" class="w-full py-4 rounded-xl bg-gradient-to-r from-gold-600 via-gold-500 to-gold-600 text-black font-cinzel font-black text-lg md:text-xl shadow-lg shadow-gold-500/20 hover:shadow-gold-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center space-x-2">
+          <span>🎲</span>
+          <span>ROLL FOR DINNER</span>
+        </button>
+
+        <!-- Targeted Objections Bar (Hidden until first main roll) -->
+        <div id="main-objection-bar" class="hidden grid grid-cols-3 gap-2 pt-2 border-t border-dndBorder/60">
+          <button id="object-v-btn" class="py-2.5 px-2 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel font-bold text-xs rounded-lg transition-all flex items-center justify-center text-center">
+            ⚔️ Object Version (D6)
+          </button>
+          <button id="object-m-btn" class="py-2.5 px-2 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel font-bold text-xs rounded-lg transition-all flex items-center justify-center text-center">
+            ⚔️ Object Meal (D20)
+          </button>
+          <button id="object-both-btn" class="py-2.5 px-2 bg-dndRed/80 hover:bg-dndRed text-white font-cinzel font-bold text-xs rounded-lg transition-all flex items-center justify-center text-center shadow-md">
+            💥 Object Both!
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Footer -->
-    <footer class="w-full text-center py-3 text-[11px] text-slate-500 border-t border-slate-900">
-        <p>Roll for Dinner • D&D Custom Meal Decider</p>
-    </footer>
+    <!-- ROLL & OBJECTION HISTORY LOG SECTION -->
+    <section class="w-full bg-dndCard/90 border border-dndBorder rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-4 border-b border-dndBorder pb-3">
+        <div class="flex items-center space-x-2.5">
+          <span class="text-xl">📜</span>
+          <div>
+            <h3 class="font-cinzel font-bold text-lg text-gold-400 leading-tight">Scroll of Fate</h3>
+            <p class="text-xs text-gray-400">Recorded history of rolls & party objections</p>
+          </div>
+        </div>
+        <button id="clear-history-btn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/40 transition-all flex items-center space-x-1">
+          <span>🗑️</span> <span>Clear Log</span>
+        </button>
+      </div>
 
-    <script>
-        // Home Cooked Meal Database (6 Versions x 20 Meals)
-        const homeMealLists = {
-            1: {
-                1: "Popcorn Skrimp/Chiken", 2: "Costco Dinner", 3: "Steak Fajitas", 4: "Buffalo Chicken Sandwiches",
-                5: "Freezer Night", 6: "Chicken Alfredo Pasta Bake", 7: "Cheeseburgers", 8: "Beef Tacos",
-                9: "Pizza Hotdogs", 10: "Pizza", 11: "Sweet and Sour Chicken", 12: "Quesadillas",
-                13: "Chili Cheese Dog Bake", 14: "BBQ Pork Ribs", 15: "Philly Cheesesteak", 16: "Lemon Pepper Chicken",
-                17: "Korean Bulgogi Beef", 18: "Chicken and Dumplings", 19: "Cajun Chicken Sloppy Joe", 20: "Roll For Take-Out"
-            },
-            2: {
-                1: "Italian Subs", 2: "Shredded Beef Tacos", 3: "Baked Mostaccioli", 4: "Garnett Inspired Sandwiches",
-                5: "Chicken and Waffles", 6: "Ham and Potato Casserole", 7: "Chicken Carbonara", 8: "Cheeseburger Pasta Skillet",
-                9: "Freezer Night", 10: "Arroz Con Pollo", 11: "Jambalaya", 12: "Chicken Parmesan",
-                13: "Lasagna Soup", 14: "BBQ Pulled Pork Wrap", 15: "Chicken Bacon Ranch Wrap", 16: "Pork Shake and Bake",
-                17: "Tacos of Choice", 18: "Roll For Take-Out", 19: "Quesadillas", 20: "Goulash"
-            },
-            3: {
-                1: "Steak and Eggs", 2: "Chicken Tater Tot Casserole", 3: "Mac and Cheese with Bacon", 4: "Italian Sausage and Potatoes Skillet",
-                5: "Taco Casserole", 6: "Chicken Fajitas", 7: "Steak", 8: "Freezer Night",
-                9: "Steak and Cheese Sub", 10: "Cheeseburgers", 11: "Meatball Subs", 12: "Ramen",
-                13: "Smothered Hamburger Steaks", 14: "Soup/Bread Bowl", 15: "Chicken Burrito Bowl", 16: "Pulled Pork Sandwiches",
-                17: "Lamb Gyros", 18: "Chicken and Bacon Ranch Pasta", 19: "Roll for Take-Out", 20: "Chili Dogs"
-            },
-            4: {
-                1: "Pork Carnitas Tacos", 2: "Cajun Dirty Rice", 3: "FFYS (Fend For Yourself)", 4: "Hamburger Helper",
-                5: "Roast Chicken", 6: "Chicken Parmesan", 7: "Spaghetti with Meatballs", 8: "Homestyle Boneless wings",
-                9: "Shrimp Skewer", 10: "Chicken Fried Rice", 11: "Baked BBQ Chicken", 12: "Freezer Night",
-                13: "Chicken Cordon Bleu", 14: "Beef Empanadas", 15: "Soup/Bread Bowl", 16: "Stuffed Shells with Beef",
-                17: "Chicken Caesar Wrap", 18: "Ravioli", 19: "Italian Sub Sandwich", 20: "Roll For Take-Out"
-            },
-            5: {
-                1: "Teriyaki Chicken Stir-Fry", 2: "Oven-Baked Meatballs", 3: "Chicken Wings", 4: "Beef Burritos",
-                5: "Shrimp Skewers", 6: "Sausage and Peppers Pasta", 7: "Steak with Mashed Potatoes", 8: "Soup/Bread Bowl",
-                9: "Lasagna", 10: "Chicken Enchiladas", 11: "Chicken Caesar Wrap", 12: "Pulled Pork Sliders",
-                13: "Roll For Take-Out", 14: "Chicken with Garlic Honey", 15: "Dutch Oven Pot Roast", 16: "Cajun Chicken Pasta",
-                17: "Chicken Alfredo Bake", 18: "Classic BLT", 19: "French Dip Sandwich", 20: "Chicken Drumsticks"
-            },
-            6: {
-                1: "Grilled Chicken Sandwich", 2: "Homemade Chicken Minis", 3: "Beef Nachos Supreme", 4: "Chicken Bacon Pasta Bake",
-                5: "Soup/Bread Bowl", 6: "Hamburger Steak with Onion Gravy", 7: "Tater Tot Casserole with Ground Beef", 8: "Chicken Drumsticks with BBQ Sauce",
-                9: "Chicken & Broccoli Alfredo", 10: "Meatballs and Marinara", 11: "Roll For Take-Out", 12: "Beef Chili with beans",
-                13: "Maple Glazed Ham Steaks", 14: "Chicken and Rice Casserole", 15: "Freezer Night", 16: "Classic Roast Beef",
-                17: "Italian Sausage Hoagies", 18: "Steak with Garlic Butter", 19: "Hot Ham & Cheese Sliders", 20: "Buffalo Chicken Mac and Cheese"
-            }
-        };
+      <!-- History Feed Container -->
+      <div id="history-feed" class="max-h-80 overflow-y-auto custom-scrollbar space-y-3 pr-1">
+        <!-- Dynamic History Items Populated Here -->
+        <div id="history-empty" class="text-center py-8 text-gray-500 text-sm italic">
+          No fate recorded yet. Cast the dice to write history!
+        </div>
+      </div>
+    </section>
 
-        // Take-Out Restaurant Database (8 Versions x 6 Options)
-        const takeoutLists = {
-            1: { 1: "Texas Roadhouse", 2: "Chilis", 3: "Pho Thien Phat", 4: "Takara", 5: "O’Charley’s", 6: "Casa Grande" },
-            2: { 1: "Red Robin", 2: "Outback", 3: "IHOP", 4: "Dennys", 5: "Firehouse Subs", 6: "Subway" },
-            3: { 1: "Cheesecake Factory", 2: "Waffle House", 3: "Cracker Barrel", 4: "Golden Corral", 5: "Tappenyaki", 6: "Chick-Fil-A" },
-            4: { 1: "Zaxbys", 2: "Popeyes", 3: "Anna’s", 4: "Olive Garden", 5: "B-Dubs", 6: "WingStop" },
-            5: { 1: "Qdoba", 2: "AppleBees", 3: "Romas", 4: "NN Burger", 5: "Ramen Time", 6: "Riverbound Cafe" },
-            6: { 1: "Mission BBQ", 2: "Tacos Mexico", 3: "Fat Boys", 4: "Jollibee", 5: "Captain D’s", 6: "Mr.Sub" },
-            7: { 1: "Sakura", 2: "Mod Pizza", 3: "Noddles & Co", 4: "Live Crawfish & Seafood", 5: "Boil Bay", 6: "HogsHead Cafe" },
-            8: { 1: "Fords Garage", 2: "Panda Express", 3: "Buz & Ned’s Real BBQ", 4: "China House", 5: "Little Caesar’s", 6: "Backwoodz BBQ" }
-        };
+  </main>
 
-        // Application State
-        let currentD6 = null;
-        let currentD20 = null;
-        let currentD8 = null;
-        let currentTakeoutD6 = null;
-        let objectionCount = 0;
+  <!-- TAKE-OUT SUB-ROLLER MODAL -->
+  <div id="takeout-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-dndCard border border-gold-500/50 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative transform scale-95 transition-transform duration-300">
+      
+      <button id="close-takeout-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold p-1">
+        ✕
+      </button>
 
-        // Menu View State
-        let menuMode = "home"; // "home" or "takeout"
-        let menuTab = 1;
+      <div class="text-center mb-6">
+        <span class="text-3xl">🥡</span>
+        <h3 class="font-cinzel text-2xl font-bold text-gold-400 mt-1">Take-Out Contingency</h3>
+        <p class="text-xs text-gray-400">Roll D8 (Category) & D6 (Restaurant) to determine your feast!</p>
+      </div>
 
-        // Web Audio Synthesizer
-        const playSound = (type) => {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
+      <!-- Modal Dice Section -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <!-- D8 Takeout Version Box -->
+        <div class="bg-dndBg border border-dndBorder rounded-xl p-4 flex flex-col items-center justify-center text-center">
+          <span class="text-xs font-cinzel text-gold-500 font-bold uppercase">D8 • Category</span>
+          <div id="d8-display" class="text-3xl font-cinzel font-extrabold text-gold-400 my-2">?</div>
+          <span id="d8-subtext" class="text-[10px] text-gray-400">Version 1 - 8</span>
+        </div>
 
-                if (type === 'roll') {
-                    for (let i = 0; i < 4; i++) {
-                        const osc = ctx.createOscillator();
-                        const gain = ctx.createGain();
-                        osc.type = 'triangle';
-                        osc.frequency.setValueAtTime(150 + Math.random() * 250, ctx.currentTime + i * 0.05);
-                        gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.05);
-                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.05 + 0.05);
-                        osc.connect(gain);
-                        gain.connect(ctx.destination);
-                        osc.start(ctx.currentTime + i * 0.05);
-                        osc.stop(ctx.currentTime + i * 0.05 + 0.05);
-                    }
-                } else if (type === 'objection') {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(220, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.35);
-                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.35);
-                } else if (type === 'takeout') {
-                    const notes = [293.66, 369.99, 440.00, 587.33];
-                    notes.forEach((freq, idx) => {
-                        const osc = ctx.createOscillator();
-                        const gain = ctx.createGain();
-                        osc.type = 'sine';
-                        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
-                        gain.gain.setValueAtTime(0.25, ctx.currentTime + idx * 0.08);
-                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.3);
-                        osc.connect(gain);
-                        gain.connect(ctx.destination);
-                        osc.start(ctx.currentTime + idx * 0.08);
-                        osc.stop(ctx.currentTime + idx * 0.08 + 0.3);
-                    });
-                }
-            } catch (e) {}
-        };
+        <!-- D6 Takeout Restaurant Box -->
+        <div class="bg-dndBg border border-dndBorder rounded-xl p-4 flex flex-col items-center justify-center text-center">
+          <span class="text-xs font-cinzel text-gold-500 font-bold uppercase">D6 • Restaurant</span>
+          <div id="modal-d6-display" class="text-3xl font-cinzel font-extrabold text-gold-400 my-2">?</div>
+          <span id="modal-d6-subtext" class="text-[10px] text-gray-400">Option 1 - 6</span>
+        </div>
+      </div>
 
-        // DOM Elements
-        const numD6 = document.getElementById("num-d6");
-        const numD20 = document.getElementById("num-d20");
-        const labelD6 = document.getElementById("label-d6");
-        const labelD20 = document.getElementById("label-d20");
-        const boxD6 = document.getElementById("box-d6");
-        const boxD20 = document.getElementById("box-d20");
+      <!-- Modal Result Box -->
+      <div class="bg-dndBg border border-gold-500/30 rounded-xl p-4 text-center mb-6 min-h-[80px] flex flex-col items-center justify-center">
+        <div id="takeout-result-title" class="font-cinzel font-bold text-lg text-white">
+          Ready to Roll Take-Out
+        </div>
+        <div id="takeout-result-sub" class="text-xs text-gold-400 mt-0.5">
+          Click below to choose your venue.
+        </div>
+      </div>
 
-        const btnRollBoth = document.getElementById("btn-roll-both");
-        const btnRollD6 = document.getElementById("btn-roll-d6");
-        const btnRollD20 = document.getElementById("btn-roll-d20");
+      <!-- Takeout Action Buttons -->
+      <div class="flex flex-col gap-2.5">
+        <button id="takeout-roll-btn" class="w-full py-3 bg-gradient-to-r from-gold-600 to-gold-500 text-black font-cinzel font-bold text-base rounded-xl shadow-lg hover:brightness-110 transition-all">
+          🎲 Roll Take-Out Dice
+        </button>
 
-        const btnObjectD6 = document.getElementById("btn-object-d6");
-        const btnObjectD20 = document.getElementById("btn-object-d20");
-        const btnObjectBoth = document.getElementById("btn-object-both");
-        const objectionCountEl = document.getElementById("objection-count");
+        <div id="takeout-objection-bar" class="hidden grid grid-cols-3 gap-2 pt-2 border-t border-dndBorder">
+          <button id="takeout-obj-cat-btn" class="py-2 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel text-[11px] font-bold rounded-lg text-center">
+            ⚔️ Object Category
+          </button>
+          <button id="takeout-obj-rest-btn" class="py-2 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel text-[11px] font-bold rounded-lg text-center">
+            ⚔️ Object Spot
+          </button>
+          <button id="takeout-obj-both-btn" class="py-2 px-1 bg-dndRed text-white font-cinzel text-[11px] font-bold rounded-lg text-center shadow">
+            💥 Object Both
+          </button>
+        </div>
+      </div>
 
-        const resultCard = document.getElementById("result-card");
-        const resultPlaceholder = document.getElementById("result-placeholder");
-        const resultContent = document.getElementById("result-content");
-        const resultVersionBadge = document.getElementById("result-version-badge");
-        const resultTitle = document.getElementById("result-title");
-        const resultDesc = document.getElementById("result-desc");
-        const takeoutFlag = document.getElementById("takeout-flag");
-        const takeoutTriggerBanner = document.getElementById("takeout-trigger-banner");
-        const btnOpenTakeoutRoller = document.getElementById("btn-open-takeout-roller");
+    </div>
+  </div>
 
-        // Take-Out Modal DOM
-        const modalTakeout = document.getElementById("modal-takeout");
-        const btnCloseTakeout = document.getElementById("btn-close-takeout");
-        const btnRollTakeoutBoth = document.getElementById("btn-roll-takeout-both");
-        const boxD8 = document.getElementById("box-d8");
-        const boxTakeoutD6 = document.getElementById("box-takeout-d6");
-        const numD8 = document.getElementById("num-d8");
-        const numTakeoutD6 = document.getElementById("num-takeout-d6");
-        const labelD8 = document.getElementById("label-d8");
-        const labelTakeoutD6 = document.getElementById("label-takeout-d6");
-        const btnRollD8 = document.getElementById("btn-roll-d8");
-        const btnRollTakeoutD6 = document.getElementById("btn-roll-takeout-d6");
+  <!-- GRIMOIRE MENU DRAWER -->
+  <div id="grimoire-drawer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="grimoire-panel" class="fixed inset-y-0 right-0 max-w-xl w-full bg-dndCard border-l border-gold-600/30 p-6 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-dndBorder">
+        <div class="flex items-center space-x-2">
+          <span class="text-2xl">📜</span>
+          <h3 class="font-cinzel text-xl font-bold text-gold-400">The Grand Grimoire</h3>
+        </div>
+        <button id="close-grimoire-btn" class="text-gray-400 hover:text-white text-2xl font-bold p-1">✕</button>
+      </div>
 
-        const takeoutPlaceholder = document.getElementById("takeout-placeholder");
-        const takeoutContent = document.getElementById("takeout-content");
-        const takeoutBadge = document.getElementById("takeout-badge");
-        const takeoutRestaurantName = document.getElementById("takeout-restaurant-name");
+      <!-- Grimoire Tabs -->
+      <div class="flex space-x-2 mt-4 border-b border-dndBorder pb-2">
+        <button id="tab-home-meals" class="px-4 py-2 text-xs font-cinzel font-bold rounded-lg bg-gold-500 text-black">
+          Home Meals (6x20)
+        </button>
+        <button id="tab-takeout-spots" class="px-4 py-2 text-xs font-cinzel font-bold rounded-lg bg-dndBorder/50 text-gray-300 hover:text-white">
+          Take-Out Spots (8x6)
+        </button>
+      </div>
 
-        const btnObjectD8 = document.getElementById("btn-object-d8");
-        const btnObjectTakeoutD6 = document.getElementById("btn-object-takeout-d6");
-        const btnObjectTakeoutBoth = document.getElementById("btn-object-takeout-both");
+      <!-- Grimoire Content Container -->
+      <div id="grimoire-content" class="flex-grow overflow-y-auto custom-scrollbar my-4 pr-2 space-y-6">
+        <!-- Populated dynamically -->
+      </div>
 
-        // Menu DOM
-        const modalMenu = document.getElementById("modal-menu");
-        const btnOpenMenu = document.getElementById("btn-open-menu");
-        const btnCloseMenu = document.getElementById("btn-close-menu");
-        const tabModeHome = document.getElementById("tab-mode-home");
-        const tabModeTakeout = document.getElementById("tab-mode-takeout");
-        const menuVersionTabs = document.getElementById("menu-version-tabs");
-        const menuItemsList = document.getElementById("menu-items-list");
-        const menuFooterNote = document.getElementById("menu-footer-note");
-        const btnReset = document.getElementById("btn-reset");
+    </div>
+  </div>
 
-        // Main Home Cook Rolling Logic
-        function rollMainDice(rollD6Target = true, rollD20Target = true, isObjection = false) {
-            playSound('roll');
+  <footer class="border-t border-dndBorder/50 py-4 text-center text-xs text-gray-500 mt-auto">
+    <p>Roll for Dinner • D&D Polyhedral Meal Companion</p>
+  </footer>
 
-            if (rollD6Target) {
-                boxD6.classList.remove("animate-shake");
-                void boxD6.offsetWidth;
-                boxD6.classList.add("animate-shake");
-            }
-            if (rollD20Target) {
-                boxD20.classList.remove("animate-shake");
-                void boxD20.offsetWidth;
-                boxD20.classList.add("animate-shake");
-            }
+  <script>
+    /* DATA TABLES: 6x20 Home Meals & 8x6 Takeout Restaurants */
+    const HOME_MEALS = {
+      1: ["Classic Spaghetti Bolognese", "Chicken Alfredo Pasta", "Beef Tacos", "Grilled Cheese & Tomato Soup", "Baked Salmon with Asparagus", "Chicken Caesar Salad", "Homemade Pepperoni Pizza", "Beef Stir-Fry", "Vegetable Curry", "Pork Chops with Applesauce", "Turkey Burgers & Fries", "Chicken Quesadillas", "Fettuccine Carbonara", "Loaded Baked Potatoes", "BBQ Pulled Pork Sandwiches", "Meatball Sub Sandwich", "Shrimp Scampi", "Chicken Fajitas", "Vegetable Stir-Fry", "Roll For Take-Out"],
+      2: ["Pad Thai", "Chicken Tikka Masala", "Beef Stroganoff", "Greek Gyros / Wraps", "Shepherd's Pie", "Teriyaki Chicken Bowl", "Fish & Chips", "Chili Con Carne", "Eggplant Parmesan", "Chicken Parmesan", "Beef & Broccoli", "French Dip Sandwiches", "Clam Chowder in Bread Bowl", "Ramen with Soft Boiled Egg", "Baked Ziti", "Sausage & Peppers", "Chicken Noodle Soup", "Spinach Stuffed Chicken", "Pork Tenderloin", "Roll For Take-Out"],
+      3: ["Butter Chicken", "Sushi Bowls", "Enchiladas", "Swedish Meatballs", "Shrimp Tacos", "Buffalo Chicken Wraps", "Caprese Pasta", "Beef Chimichangas", "Lentil Soup & Crusty Bread", "Chicken Marsala", "Stuffed Bell Peppers", "Gnocchi in Brown Butter", "Carnitas Bowl", "Greek Lemon Chicken", "Jambalaya", "BBQ Ribs", "Fish Tacos", "Beef Empanadas", "Vegetable Lasagna", "Roll For Take-Out"],
+      4: ["Katsu Curry", "Philly Cheesesteak", "Korean Fried Chicken", "Mushroom Risotto", "Shrimp Po' Boy", "Chicken Enchilada Casserole", "Beef Kebabs", "Pesto Pasta with Sun-Dried Tomatoes", "Pork Carnitas Tacos", "Chicken Piccata", "Falafel Pita Wraps", "BBQ Chicken Pizza", "Birria Tacos", "Turkey Chili", "Lobster / Crab Roll", "Sweet & Sour Chicken", "Beef Gyros", "Thai Green Curry", "Clam Linguine", "Roll For Take-Out"],
+      5: ["Beef Pho", "Chicken Fried Rice", "Baked Cod with Herb Crust", "Chicken Pot Pie", "Slow Cooker Pot Roast", "Tuscan Garlic Chicken", "Black Bean Burgers", "Shrimp Alfredo", "Pork Fried Rice", "Baked Macaroni & Cheese", "Chicken Souvlaki", "Beef Noodle Soup", "Crispy Tofu Stir-Fry", "Sausage & Mash", "Spicy Tuna Bowls", "Chicken Cordon Bleu", "Cauliflower Steak", "Beef Burritos", "Vegetable Chow Mein", "Roll For Take-Out"],
+      6: ["Bavarian Bratwurst & Kraut", "Chicken & Waffles", "Beef Shawarma Wraps", "Honey Mustard Glazed Salmon", "Shrimp Fajita Bowls", "Garlic Butter Steak Bites", "BBQ Beef Brisket", "Chicken Korma", "Vegetable Lo Mein", "Turkey Meatloaf", "Fish & Shrimp Paella", "Chicken Club Sandwich", "Beef Nachos Supreme", "Spinach & Feta Pie (Spanakopita)", "Teriyaki Salmon", "Chicken Chimichurri", "Pork Belly Bun / Bao", "Mushroom Burger", "Seafood Chowder", "Roll For Take-Out"]
+    };
 
-            let shuffleCount = 0;
-            const interval = setInterval(() => {
-                if (rollD6Target) numD6.textContent = Math.floor(Math.random() * 6) + 1;
-                if (rollD20Target) numD20.textContent = Math.floor(Math.random() * 20) + 1;
-                shuffleCount++;
+    const TAKEOUT_SPOTS = {
+      1: { category: "Mexican & Tex-Mex", spots: ["Taco Bell", "Chipotle", "Qdoba", "Local Taqueria", "Moe's Southwest Grill", "Del Taco"] },
+      2: { category: "Asian & Noodles", spots: ["Panda Express", "P.F. Chang's", "Local Thai Bistro", "Ramen Noodle Bar", "Pei Wei", "Sushi Joint"] },
+      3: { category: "Pizza & Italian", spots: ["Domino's", "Papa John's", "Pizza Hut", "Little Caesars", "Local Pizzeria", "Olive Garden"] },
+      4: { category: "American & Burgers", spots: ["McDonald's", "Wendy's", "Five Guys", "In-N-Out / Shake Shack", "Burger King", "Red Robin"] },
+      5: { category: "Chicken & BBQ", spots: ["Chick-fil-A", "Raising Cane's", "Popeyes", "Wingstop", "KFC", "Local BBQ Pit"] },
+      6: { category: "Mediterranean & Middle Eastern", spots: ["Halal Guys", "Cava", "Zoe's Kitchen", "Local Gyro House", "Shawarma Grill", "Falafel Spot"] },
+      7: { category: "Sandwiches & Subs", spots: ["Subway", "Jersey Mike's", "Jimmy John's", "Firehouse Subs", "Panera Bread", "Potbelly"] },
+      8: { category: "Indian & Curry", spots: ["Local Curry House", "Biryani Express", "Tandoori Grill", "Naan & Spice", "Dosa Corner", "Bombay Bistro"] }
+    };
 
-                if (shuffleCount >= 8) {
-                    clearInterval(interval);
-                    finalizeMainRoll(rollD6Target, rollD20Target, isObjection);
-                }
-            }, 50);
+    /* STATE MANAGEMENT */
+    let currentMainRoll = { version: null, mealIndex: null, mealName: null };
+    let currentTakeoutRoll = { version: null, spotIndex: null, restaurantName: null, categoryName: null };
+    let historyLog = [];
+
+    /* WEB AUDIO SYNTHESIZER FOR DICE SOUNDS */
+    class AudioEffects {
+      constructor() {
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+      playDiceRoll() {
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        for (let i = 0; i < 5; i++) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150 + Math.random() * 300, now + i * 0.08);
+          gain.gain.setValueAtTime(0.15, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.07);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.07);
+        }
+      }
+      playCrit() {
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      }
+      playObjection() {
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.setValueAtTime(110, now + 0.1);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+    }
+    const audio = new AudioEffects();
+
+    function getEl(id) { return document.getElementById(id); }
+
+    function loadHistory() {
+      try {
+        const stored = localStorage.getItem('roll_for_dinner_history');
+        if (stored) {
+          historyLog = JSON.parse(stored);
+        }
+      } catch (e) {
+        historyLog = [];
+      }
+      renderHistory();
+    }
+
+    function saveHistory() {
+      try {
+        localStorage.setItem('roll_for_dinner_history', JSON.stringify(historyLog));
+      } catch (e) {}
+    }
+
+    function addHistoryEntry(entry) {
+      entry.id = Date.now() + Math.random().toString(36).substr(2, 4);
+      entry.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      historyLog.unshift(entry); // Newest on top
+      if (historyLog.length > 50) historyLog.pop(); // Limit to 50
+      saveHistory();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const container = getEl('history-feed');
+      const emptyMsg = getEl('history-empty');
+
+      if (!historyLog || historyLog.length === 0) {
+        container.innerHTML = '';
+        container.appendChild(emptyMsg);
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+
+      container.innerHTML = '';
+
+      historyLog.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-dndBg/90 border border-dndBorder/80 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm transition-all hover:border-gold-500/40";
+
+        let badge = '';
+        let title = '';
+        let details = '';
+
+        if (item.type === 'MAIN_ROLL') {
+          badge = `<span class="px-2 py-0.5 text-[10px] font-bold font-cinzel rounded bg-gold-500/20 text-gold-400 border border-gold-500/30">Main Roll</span>`;
+          title = `<span class="font-bold text-white">${item.mealName}</span>`;
+          details = `<span class="text-xs text-gray-400">D6: <strong class="text-gold-400">V${item.version}</strong> | D20: <strong class="text-gold-400">#${item.mealIndex}</strong></span>`;
+        } else if (item.type === 'OBJECTION') {
+          badge = `<span class="px-2 py-0.5 text-[10px] font-bold font-cinzel rounded bg-red-900/30 text-red-400 border border-red-700/40">⚔️ Objection!</span>`;
+          title = `<span class="font-bold text-red-200">${item.targetName}</span>`;
+          details = `<span class="text-xs text-gray-400">Previous: <span class="line-through text-gray-500">${item.oldResult}</span> ➔ New: <strong class="text-gold-400">${item.newResult}</strong></span>`;
+        } else if (item.type === 'TAKEOUT_ROLL') {
+          badge = `<span class="px-2 py-0.5 text-[10px] font-bold font-cinzel rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">🥡 Take-Out</span>`;
+          title = `<span class="font-bold text-amber-200">${item.restaurantName}</span> <span class="text-xs text-gray-400">(${item.categoryName})</span>`;
+          details = `<span class="text-xs text-gray-400">D8: <strong class="text-amber-400">V${item.version}</strong> | D6: <strong class="text-amber-400">#${item.spotIndex}</strong></span>`;
         }
 
-        function finalizeMainRoll(rolledD6, rolledD20, isObjection) {
-            if (rolledD6) {
-                let nextD6 = Math.floor(Math.random() * 6) + 1;
-                if (isObjection && currentD6 !== null && nextD6 === currentD6) nextD6 = (nextD6 % 6) + 1;
-                currentD6 = nextD6;
-                numD6.textContent = currentD6;
-                labelD6.textContent = `Version ${currentD6}`;
-            }
+        card.innerHTML = `
+          <div class="flex items-start sm:items-center space-x-3">
+            <div class="mt-0.5 sm:mt-0">${badge}</div>
+            <div class="flex flex-col">
+              <div class="text-sm">${title}</div>
+              <div class="mt-0.5">${details}</div>
+            </div>
+          </div>
+          <div class="text-[10px] font-mono text-gray-500 self-end sm:self-center">
+            ${item.timestamp}
+          </div>
+        `;
 
-            if (rolledD20) {
-                let nextD20 = Math.floor(Math.random() * 20) + 1;
-                if (isObjection && currentD20 !== null && nextD20 === currentD20) nextD20 = (nextD20 % 20) + 1;
-                currentD20 = nextD20;
-                numD20.textContent = currentD20;
-                labelD20.textContent = `Meal #${currentD20}`;
-            }
+        container.appendChild(card);
+      });
+    }
 
-            updateMainOutcome();
-            enableMainObjectionButtons();
+    function animateDice(element, finalValue, duration = 600) {
+      element.classList.add('animate-dice-shake');
+      const startTime = performance.now();
+      audio.playDiceRoll();
+
+      return new Promise((resolve) => {
+        function update(currentTime) {
+          const elapsed = currentTime - startTime;
+          if (elapsed < duration) {
+            element.textContent = Math.floor(Math.random() * 20) + 1;
+            requestAnimationFrame(update);
+          } else {
+            element.textContent = finalValue;
+            element.classList.remove('animate-dice-shake');
+            resolve();
+          }
         }
+        requestAnimationFrame(update);
+      });
+    }
 
-        function updateMainOutcome() {
-            if (currentD6 && currentD20) {
-                const mealName = homeMealLists[currentD6]?.[currentD20] || "Unknown Option";
+    /* Perform Main Roll */
+    async function executeMainRoll(forceV = null, forceM = null, isObjection = false) {
+      const v = forceV || (Math.floor(Math.random() * 6) + 1);
+      const m = forceM || (Math.floor(Math.random() * 20) + 1);
 
-                resultPlaceholder.classList.add("hidden");
-                resultContent.classList.remove("hidden");
+      const d6El = getEl('d6-display');
+      const d20El = getEl('d20-display');
 
-                resultVersionBadge.textContent = `Version ${currentD6} • Meal #${currentD20}`;
-                resultTitle.textContent = mealName;
-                resultDesc.textContent = `Fated choice from Home Cooking Version ${currentD6}`;
+      if (isObjection) {
+        audio.playObjection();
+      }
 
-                // Check if Take-Out triggered
-                if (mealName.toLowerCase().includes("take-out")) {
-                    takeoutFlag.classList.remove("hidden");
-                    takeoutTriggerBanner.classList.remove("hidden");
-                    playSound('takeout');
-                    // Automatically prompt modal after short delay
-                    setTimeout(() => {
-                        modalTakeout.classList.remove("hidden");
-                    }, 400);
-                } else {
-                    takeoutFlag.classList.add("hidden");
-                    takeoutTriggerBanner.classList.add("hidden");
-                }
-            }
-        }
+      const promises = [];
+      if (!forceV || isObjection) promises.push(animateDice(d6El, v));
+      if (!forceM || isObjection) promises.push(animateDice(d20El, m));
 
-        function enableMainObjectionButtons() {
-            btnObjectD6.disabled = !currentD6;
-            btnObjectD20.disabled = !currentD20;
-            btnObjectBoth.disabled = !(currentD6 && currentD20);
-        }
+      await Promise.all(promises);
 
-        // Take-Out Sub-Roller Rolling Logic (D8 + D6)
-        function rollTakeoutDice(rollD8Target = true, rollD6Target = true, isObjection = false) {
-            playSound('roll');
+      const oldMeal = currentMainRoll.mealName;
+      currentMainRoll = {
+        version: v,
+        mealIndex: m,
+        mealName: HOME_MEALS[v][m - 1]
+      };
 
-            if (rollD8Target) {
-                boxD8.classList.remove("animate-shake");
-                void boxD8.offsetWidth;
-                boxD8.classList.add("animate-shake");
-            }
-            if (rollD6Target) {
-                boxTakeoutD6.classList.remove("animate-shake");
-                void boxTakeoutD6.offsetWidth;
-                boxTakeoutD6.classList.add("animate-shake");
-            }
+      // Display UI Updates
+      getEl('d6-subtext').textContent = `Version ${v} Selected`;
+      getEl('d20-subtext').textContent = `Slot #${m} Selected`;
 
-            let shuffleCount = 0;
-            const interval = setInterval(() => {
-                if (rollD8Target) numD8.textContent = Math.floor(Math.random() * 8) + 1;
-                if (rollD6Target) numTakeoutD6.textContent = Math.floor(Math.random() * 6) + 1;
-                shuffleCount++;
+      const titleEl = getEl('result-title');
+      const descEl = getEl('result-description');
 
-                if (shuffleCount >= 8) {
-                    clearInterval(interval);
-                    finalizeTakeoutRoll(rollD8Target, rollD6Target, isObjection);
-                }
-            }, 50);
-        }
+      if (currentMainRoll.mealName === "Roll For Take-Out") {
+        titleEl.textContent = "🥡 ROLL FOR TAKE-OUT!";
+        descEl.textContent = "Fate has decreed a takeaway feast! Opening Take-Out sub-roller...";
+        audio.playCrit();
+        setTimeout(() => { openTakeoutModal(); }, 1200);
+      } else {
+        titleEl.textContent = currentMainRoll.mealName;
+        descEl.textContent = `Home Cooking • Menu Version ${v}, Slot #${m}`;
+      }
 
-        function finalizeTakeoutRoll(rolledD8, rolledD6, isObjection) {
-            if (rolledD8) {
-                let nextD8 = Math.floor(Math.random() * 8) + 1;
-                if (isObjection && currentD8 !== null && nextD8 === currentD8) nextD8 = (nextD8 % 8) + 1;
-                currentD8 = nextD8;
-                numD8.textContent = currentD8;
-                labelD8.textContent = `Version ${currentD8}`;
-            }
+      getEl('main-objection-bar').classList.remove('hidden');
 
-            if (rolledD6) {
-                let nextD6 = Math.floor(Math.random() * 6) + 1;
-                if (isObjection && currentTakeoutD6 !== null && nextD6 === currentTakeoutD6) nextD6 = (nextD6 % 6) + 1;
-                currentTakeoutD6 = nextD6;
-                numTakeoutD6.textContent = currentTakeoutD6;
-                labelTakeoutD6.textContent = `Restaurant #${currentTakeoutD6}`;
-            }
-
-            updateTakeoutOutcome();
-            enableTakeoutObjectionButtons();
-        }
-
-        function updateTakeoutOutcome() {
-            if (currentD8 && currentTakeoutD6) {
-                const restName = takeoutLists[currentD8]?.[currentTakeoutD6] || "Unknown Restaurant";
-
-                takeoutPlaceholder.classList.add("hidden");
-                takeoutContent.classList.remove("hidden");
-
-                takeoutBadge.textContent = `Version ${currentD8} • Choice #${currentTakeoutD6}`;
-                takeoutRestaurantName.textContent = restName;
-            }
-        }
-
-        function enableTakeoutObjectionButtons() {
-            btnObjectD8.disabled = !currentD8;
-            btnObjectTakeoutD6.disabled = !currentTakeoutD6;
-            btnObjectTakeoutBoth.disabled = !(currentD8 && currentTakeoutD6);
-        }
-
-        // Objection Handler
-        function handleObjection(callback) {
-            objectionCount++;
-            objectionCountEl.textContent = objectionCount;
-            playSound('objection');
-            callback();
-        }
-
-        // Event Listeners for Main Roll
-        btnRollBoth.addEventListener("click", () => rollMainDice(true, true, false));
-        btnRollD6.addEventListener("click", () => rollMainDice(true, false, false));
-        btnRollD20.addEventListener("click", () => rollMainDice(false, true, false));
-        boxD6.addEventListener("click", () => rollMainDice(true, false, false));
-        boxD20.addEventListener("click", () => rollMainDice(false, true, false));
-
-        btnObjectD6.addEventListener("click", () => handleObjection(() => rollMainDice(true, false, true)));
-        btnObjectD20.addEventListener("click", () => handleObjection(() => rollMainDice(false, true, true)));
-        btnObjectBoth.addEventListener("click", () => handleObjection(() => rollMainDice(true, true, true)));
-
-        // Event Listeners for Take-Out Sub-Roller
-        btnOpenTakeoutRoller.addEventListener("click", () => modalTakeout.classList.remove("hidden"));
-        btnCloseTakeout.addEventListener("click", () => modalTakeout.classList.add("hidden"));
-
-        btnRollTakeoutBoth.addEventListener("click", () => rollTakeoutDice(true, true, false));
-        btnRollD8.addEventListener("click", () => rollTakeoutDice(true, false, false));
-        btnRollTakeoutD6.addEventListener("click", () => rollTakeoutDice(false, true, false));
-        boxD8.addEventListener("click", () => rollTakeoutDice(true, false, false));
-        boxTakeoutD6.addEventListener("click", () => rollTakeoutDice(false, true, false));
-
-        btnObjectD8.addEventListener("click", () => handleObjection(() => rollTakeoutDice(true, false, true)));
-        btnObjectTakeoutD6.addEventListener("click", () => handleObjection(() => rollTakeoutDice(false, true, true)));
-        btnObjectTakeoutBoth.addEventListener("click", () => handleObjection(() => rollTakeoutDice(true, true, true)));
-
-        // Reset Session
-        btnReset.addEventListener("click", () => {
-            currentD6 = null;
-            currentD20 = null;
-            currentD8 = null;
-            currentTakeoutD6 = null;
-            objectionCount = 0;
-
-            numD6.textContent = "?";
-            numD20.textContent = "?";
-            numD8.textContent = "?";
-            numTakeoutD6.textContent = "?";
-
-            labelD6.textContent = "Roll D6";
-            labelD20.textContent = "Roll D20";
-            labelD8.textContent = "Roll D8";
-            labelTakeoutD6.textContent = "Roll D6";
-
-            objectionCountEl.textContent = "0";
-
-            resultPlaceholder.classList.remove("hidden");
-            resultContent.classList.add("hidden");
-            takeoutTriggerBanner.classList.add("hidden");
-
-            takeoutPlaceholder.classList.remove("hidden");
-            takeoutContent.classList.add("hidden");
-
-            enableMainObjectionButtons();
-            enableTakeoutObjectionButtons();
+      // Log to history
+      if (isObjection) {
+        addHistoryEntry({
+          type: 'OBJECTION',
+          targetName: 'Main Meal Objection',
+          oldResult: oldMeal || 'Initial Roll',
+          newResult: currentMainRoll.mealName
         });
-
-        // Menu Modal Switcher Logic
-        btnOpenMenu.addEventListener("click", () => {
-            renderMenuTabs();
-            renderMenuItems();
-            modalMenu.classList.remove("hidden");
+      } else {
+        addHistoryEntry({
+          type: 'MAIN_ROLL',
+          version: v,
+          mealIndex: m,
+          mealName: currentMainRoll.mealName
         });
+      }
+    }
 
-        btnCloseMenu.addEventListener("click", () => modalMenu.classList.add("hidden"));
+    /* Perform Takeout Sub-Roll */
+    async function executeTakeoutRoll(forceV = null, forceS = null, isObjection = false) {
+      const v = forceV || (Math.floor(Math.random() * 8) + 1);
+      const s = forceS || (Math.floor(Math.random() * 6) + 1);
 
-        tabModeHome.addEventListener("click", () => {
-            menuMode = "home";
-            menuTab = 1;
-            tabModeHome.className = "py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40";
-            tabModeTakeout.className = "py-2 rounded-lg text-slate-400 hover:text-white";
-            menuFooterNote.textContent = "Home Cooking Menu Options (Roll D6 + D20)";
-            renderMenuTabs();
-            renderMenuItems();
+      const d8El = getEl('d8-display');
+      const d6El = getEl('modal-d6-display');
+
+      if (isObjection) audio.playObjection();
+
+      const promises = [];
+      if (!forceV || isObjection) promises.push(animateDice(d8El, v));
+      if (!forceS || isObjection) promises.push(animateDice(d6El, s));
+
+      await Promise.all(promises);
+
+      const categoryData = TAKEOUT_SPOTS[v];
+      const spotName = categoryData.spots[s - 1];
+
+      const oldSpot = currentTakeoutRoll.restaurantName;
+
+      currentTakeoutRoll = {
+        version: v,
+        spotIndex: s,
+        categoryName: categoryData.category,
+        restaurantName: spotName
+      };
+
+      getEl('d8-subtext').textContent = categoryData.category;
+      getEl('modal-d6-subtext').textContent = `Option #${s}`;
+
+      getEl('takeout-result-title').textContent = spotName;
+      getEl('takeout-result-sub').textContent = `${categoryData.category} • Category ${v}, Spot #${s}`;
+
+      getEl('takeout-objection-bar').classList.remove('hidden');
+
+      if (isObjection) {
+        addHistoryEntry({
+          type: 'OBJECTION',
+          targetName: 'Take-Out Objection',
+          oldResult: oldSpot || 'Initial Roll',
+          newResult: spotName
         });
-
-        tabModeTakeout.addEventListener("click", () => {
-            menuMode = "takeout";
-            menuTab = 1;
-            tabModeTakeout.className = "py-2 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40";
-            tabModeHome.className = "py-2 rounded-lg text-slate-400 hover:text-white";
-            menuFooterNote.textContent = "Take-Out Restaurant Options (Roll D8 + D6)";
-            renderMenuTabs();
-            renderMenuItems();
+      } else {
+        addHistoryEntry({
+          type: 'TAKEOUT_ROLL',
+          version: v,
+          spotIndex: s,
+          categoryName: categoryData.category,
+          restaurantName: spotName
         });
+      }
+    }
 
-        function renderMenuTabs() {
-            menuVersionTabs.innerHTML = "";
-            const totalVersions = menuMode === "home" ? 6 : 8;
+    function openTakeoutModal() {
+      const modal = getEl('takeout-modal');
+      modal.classList.remove('pointer-events-none', 'opacity-0');
+      modal.querySelector('div').classList.remove('scale-95');
+      modal.querySelector('div').classList.add('scale-100');
+    }
 
-            for (let v = 1; v <= totalVersions; v++) {
-                const btn = document.createElement("button");
-                btn.textContent = `Ver ${v}`;
-                const isActive = v === menuTab;
+    function closeTakeoutModal() {
+      const modal = getEl('takeout-modal');
+      modal.classList.add('pointer-events-none', 'opacity-0');
+      modal.querySelector('div').classList.remove('scale-100');
+      modal.querySelector('div').classList.add('scale-95');
+    }
 
-                if (menuMode === "home") {
-                    btn.className = `px-3 py-2 rounded-lg text-xs font-bold font-cinzel flex-shrink-0 transition ${
-                        isActive ? "text-amber-400 bg-slate-800 border border-amber-500/40" : "text-slate-400 hover:text-white"
-                    }`;
-                } else {
-                    btn.className = `px-3 py-2 rounded-lg text-xs font-bold font-cinzel flex-shrink-0 transition ${
-                        isActive ? "text-purple-300 bg-slate-800 border border-purple-500/40" : "text-slate-400 hover:text-white"
-                    }`;
-                }
+    function renderGrimoire(tab = 'home') {
+      const container = getEl('grimoire-content');
+      container.innerHTML = '';
 
-                btn.addEventListener("click", () => {
-                    menuTab = v;
-                    renderMenuTabs();
-                    renderMenuItems();
-                });
-
-                menuVersionTabs.appendChild(btn);
-            }
+      if (tab === 'home') {
+        for (let v = 1; v <= 6; v++) {
+          const sec = document.createElement('div');
+          sec.className = "bg-dndBg border border-dndBorder rounded-xl p-4";
+          sec.innerHTML = `
+            <h4 class="font-cinzel font-bold text-gold-400 text-sm mb-3 pb-1 border-b border-dndBorder flex justify-between">
+              <span>Version ${v}</span>
+              <span class="text-xs text-gray-500 font-sans font-normal">20 Items</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${HOME_MEALS[v].map((m, idx) => `
+                <div class="text-xs p-2 rounded bg-dndCard/60 border border-dndBorder/40 flex items-center space-x-2">
+                  <span class="font-bold text-gold-500/80 w-5">#${idx + 1}</span>
+                  <span class="${m === 'Roll For Take-Out' ? 'text-amber-400 font-bold' : 'text-gray-300'}">${m}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          container.appendChild(sec);
         }
-
-        function renderMenuItems() {
-            menuItemsList.innerHTML = "";
-            const dataSource = menuMode === "home" ? homeMealLists : takeoutLists;
-            const currentList = dataSource[menuTab] || {};
-            const itemCount = menuMode === "home" ? 20 : 6;
-
-            for (let i = 1; i <= itemCount; i++) {
-                const name = currentList[i] || "";
-                const isTakeoutItem = name.toLowerCase().includes("take-out");
-                const itemDiv = document.createElement("div");
-
-                itemDiv.className = `p-2.5 rounded-xl border flex items-center justify-between text-xs transition ${
-                    isTakeoutItem 
-                    ? "bg-purple-950/40 border-purple-500/40 text-purple-200" 
-                    : "bg-slate-800/60 border-slate-700/60 text-slate-200 hover:border-amber-500/40"
-                }`;
-
-                itemDiv.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <span class="w-6 h-6 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center font-bold text-[10px] ${menuMode === 'home' ? 'text-amber-400' : 'text-purple-300'} font-cinzel">
-                            ${i}
-                        </span>
-                        <span class="font-medium">${name}</span>
-                    </div>
-                    ${isTakeoutItem ? '<span class="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/40 font-bold">TAKE-OUT</span>' : ''}
-                `;
-
-                menuItemsList.appendChild(itemDiv);
-            }
+      } else {
+        for (let v = 1; v <= 8; v++) {
+          const cat = TAKEOUT_SPOTS[v];
+          const sec = document.createElement('div');
+          sec.className = "bg-dndBg border border-dndBorder rounded-xl p-4";
+          sec.innerHTML = `
+            <h4 class="font-cinzel font-bold text-gold-400 text-sm mb-3 pb-1 border-b border-dndBorder flex justify-between">
+              <span>Category ${v}: ${cat.category}</span>
+              <span class="text-xs text-gray-500 font-sans font-normal">6 Spots</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${cat.spots.map((s, idx) => `
+                <div class="text-xs p-2 rounded bg-dndCard/60 border border-dndBorder/40 flex items-center space-x-2">
+                  <span class="font-bold text-gold-500/80 w-5">#${idx + 1}</span>
+                  <span class="text-gray-300">${s}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          container.appendChild(sec);
         }
+      }
+    }
 
-        // Inline Dynamic PWA Manifest Setup
-        const pwaManifest = {
-            name: "Roll for Dinner - D&D Meal Decider",
-            short_name: "Roll4Dinner",
-            description: "Roll D6 + D20 for home meals or D8 + D6 for take-out!",
-            start_url: "./",
-            display: "standalone",
-            background_color: "#0b0f19",
-            theme_color: "#0f172a",
-            icons: [
-                {
-                    src: "https://placehold.co/192x192/0f172a/f59e0b?text=D20",
-                    sizes: "192x192",
-                    type: "image/png"
-                },
-                {
-                    src: "https://placehold.co/512x512/0f172a/f59e0b?text=D20",
-                    sizes: "512x512",
-                    type: "image/png"
-                }
-            ]
-        };
+    function openGrimoire() {
+      renderGrimoire('home');
+      const drawer = getEl('grimoire-drawer');
+      const panel = getEl('grimoire-panel');
+      drawer.classList.remove('pointer-events-none', 'opacity-0');
+      panel.classList.remove('translate-x-full');
+    }
 
-        const manifestBlob = new Blob([JSON.stringify(pwaManifest)], { type: 'application/json' });
-        document.getElementById('manifest-placeholder').setAttribute('href', URL.createObjectURL(manifestBlob));
+    function closeGrimoire() {
+      const drawer = getEl('grimoire-drawer');
+      const panel = getEl('grimoire-panel');
+      drawer.classList.add('pointer-events-none', 'opacity-0');
+      panel.classList.add('translate-x-full');
+    }
 
-        // Inline Blob Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                const CACHE_NAME = 'r4d-v3';
-                self.addEventListener('install', (e) => {
-                    e.waitUntil(
-                        caches.open(CACHE_NAME).then((cache) => cache.addAll(['./']))
-                    );
-                });
-                self.addEventListener('fetch', (e) => {
-                    e.respondWith(
-                        caches.match(e.request).then((res) => res || fetch(e.request))
-                    );
-                });
-            `;
-            const swBlob = new Blob([swCode], { type: 'text/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(swBlob))
-                .then(() => console.log('PWA Service Worker Online'))
-                .catch(err => console.log('SW registration error', err));
+    window.addEventListener('DOMContentLoaded', () => {
+      loadHistory();
+
+      // Main Roll Button
+      getEl('main-roll-btn').addEventListener('click', () => executeMainRoll());
+
+      // Main Objections
+      getEl('object-v-btn').addEventListener('click', () => executeMainRoll(null, currentMainRoll.mealIndex, true));
+      getEl('object-m-btn').addEventListener('click', () => executeMainRoll(currentMainRoll.version, null, true));
+      getEl('object-both-btn').addEventListener('click', () => executeMainRoll(null, null, true));
+
+      // Takeout Roll Button
+      getEl('takeout-roll-btn').addEventListener('click', () => executeTakeoutRoll());
+
+      // Takeout Objections
+      getEl('takeout-obj-cat-btn').addEventListener('click', () => executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true));
+      getEl('takeout-obj-rest-btn').addEventListener('click', () => executeTakeoutRoll(currentTakeoutRoll.version, null, true));
+      getEl('takeout-obj-both-btn').addEventListener('click', () => executeTakeoutRoll(null, null, true));
+
+      // Modal Closers
+      getEl('close-takeout-modal').addEventListener('click', closeTakeoutModal);
+
+      // Grimoire Controls
+      getEl('open-grimoire-btn').addEventListener('click', openGrimoire);
+      getEl('close-grimoire-btn').addEventListener('click', closeGrimoire);
+
+      getEl('tab-home-meals').addEventListener('click', (e) => {
+        e.target.className = "px-4 py-2 text-xs font-cinzel font-bold rounded-lg bg-gold-500 text-black";
+        getEl('tab-takeout-spots').className = "px-4 py-2 text-xs font-cinzel font-bold rounded-lg bg-dndBorder/50 text-gray-300 hover:text-white";
+        renderGrimoire('home');
+      });
+
+      getEl('tab-takeout-spots').addEventListener('click', (e) => {
+        e.target.className = "px-4 py-2 text-xs font-cinzel font-bold rounded-lg bg-gold-500 text-black";
+        getEl('tab-home-meals').className = "px-4 py-2 text-xs font-cinzel font-bold rounded-lg bg-dndBorder/50 text-gray-300 hover:text-white";
+        renderGrimoire('takeout');
+      });
+
+      // Clear History
+      getEl('clear-history-btn').addEventListener('click', () => {
+        if (confirm("Are you sure you wish to erase the Scroll of Fate history?")) {
+          historyLog = [];
+          saveHistory();
+          renderHistory();
         }
+      });
 
-        // Initialize Icons
-        document.addEventListener("DOMContentLoaded", () => {
-            lucide.createIcons();
+      // Register Dynamic PWA Service Worker Blob
+      setupPWA();
+    });
+
+    function setupPWA() {
+      // Create inline Web Manifest
+      const manifestObj = {
+        name: "Roll for Dinner PWA",
+        short_name: "RollForDinner",
+        start_url: "./index.html",
+        display: "standalone",
+        background_color: "#121216",
+        theme_color: "#121216",
+        icons: [{
+          src: "https://cdn-icons-png.flaticon.com/512/3082/3082060.png",
+          sizes: "512x512",
+          type: "image/png"
+        }]
+      };
+      const manifestStr = JSON.stringify(manifestObj);
+      const manifestBlob = new Blob([manifestStr], { type: 'application/json' });
+      getEl('pwa-manifest').href = URL.createObjectURL(manifestBlob);
+
+      // Create inline Service Worker
+      if ('serviceWorker' in navigator) {
+        const swCode = `
+          const CACHE_NAME = 'roll-for-dinner-v2';
+          self.addEventListener('install', e => {
+            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./'])));
+          });
+          self.addEventListener('fetch', e => {
+            e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+          });
+        `;
+        const swBlob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swUrl).catch(() => {});
+      }
+
+      // PWA Install Prompt Button Handler
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const btn = getEl('pwa-install-btn');
+        btn.classList.remove('hidden');
+        btn.addEventListener('click', () => {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(() => {
+            btn.classList.add('hidden');
+          });
         });
-    </script>
+      });
+    }
+  </script>
+
 </body>
 </html>
