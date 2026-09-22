@@ -9,7 +9,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <!-- Manifest & Favicon (Inlined Data URI Manifest for PWA) -->
+  <!-- Home Screen & Favicon Icons -->
+  <link rel="apple-touch-icon" sizes="512x512" href="dice-twenty-faces-twenty.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="dice-twenty-faces-twenty.png">
+
+  <!-- Manifest (Inlined Data URI Manifest for PWA) -->
   <link rel="manifest" id="pwa-manifest">
 
   <!-- Fonts & Icons -->
@@ -107,8 +111,8 @@
   <header class="w-full border-b border-dndBorder/60 bg-dndCard/80 backdrop-blur-md sticky top-0 z-30">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-gold-400 to-gold-700 flex items-center justify-center shadow-lg shadow-gold-500/10 text-black font-cinzel font-black text-xl">
-          🎲
+        <div class="w-10 h-10 rounded-lg overflow-hidden shadow-lg shadow-gold-500/10 flex items-center justify-center bg-dndCard border border-gold-600/40">
+          <img src="dice-twenty-faces-twenty.png" alt="Roll For Dinner Logo" class="w-full h-full object-cover">
         </div>
         <div>
           <h1 class="font-cinzel font-bold text-lg md:text-xl text-gold-400 leading-none">Roll For Dinner</h1>
@@ -816,7 +820,7 @@
         background_color: "#121216",
         theme_color: "#121216",
         icons: [{
-          src: "hhttps://vectorified.com/images/dice-icon-1.png",
+          src: "dice-twenty-faces-twenty.png",
           sizes: "512x512",
           type: "image/png"
         }]
@@ -827,9 +831,9 @@
 
       if ('serviceWorker' in navigator) {
         const swCode = `
-          const CACHE_NAME = 'roll-for-dinner-v3';
+          const CACHE_NAME = 'roll-for-dinner-v4';
           self.addEventListener('install', e => {
-            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./'])));
+            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./', 'dice-twenty-faces-twenty.png'])));
           });
           self.addEventListener('fetch', e => {
             e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
