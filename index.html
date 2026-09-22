@@ -343,6 +343,14 @@
       8: { category: "Indian & Curry", spots: ["Local Curry House", "Biryani Express", "Tandoori Grill", "Naan & Spice", "Dosa Corner", "Bombay Bistro"] }
     };
 
+    /* CRYPTOGRAPHICALLY SECURE RANDOM NUMBER GENERATOR */
+    function getRandomInt(min, max) {
+      const range = max - min + 1;
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      return min + (array[0] % range);
+    }
+
     /* STATE MANAGEMENT */
     let currentMainRoll = { version: null, mealIndex: null, mealName: null };
     let currentTakeoutRoll = { version: null, spotIndex: null, restaurantName: null, categoryName: null };
@@ -577,7 +585,7 @@
         function update(currentTime) {
           const elapsed = currentTime - startTime;
           if (elapsed < duration) {
-            element.textContent = Math.floor(Math.random() * 20) + 1;
+            element.textContent = getRandomInt(1, 20);
             requestAnimationFrame(update);
           } else {
             element.textContent = finalValue;
@@ -591,8 +599,8 @@
 
     /* Perform Main Roll */
     async function executeMainRoll(forceV = null, forceM = null, isObjection = false) {
-      const v = forceV || (Math.floor(Math.random() * 6) + 1);
-      const m = forceM || (Math.floor(Math.random() * 20) + 1);
+      const v = forceV || getRandomInt(1, 6);
+      const m = forceM || getRandomInt(1, 20);
 
       const d6El = getEl('d6-display');
       const d20El = getEl('d20-display');
@@ -656,8 +664,8 @@
 
     /* Perform Takeout Sub-Roll */
     async function executeTakeoutRoll(forceV = null, forceS = null, isObjection = false) {
-      const v = forceV || (Math.floor(Math.random() * 8) + 1);
-      const s = forceS || (Math.floor(Math.random() * 6) + 1);
+      const v = forceV || getRandomInt(1, 8);
+      const s = forceS || getRandomInt(1, 6);
 
       const d8El = getEl('d8-display');
       const d6El = getEl('modal-d6-display');
