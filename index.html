@@ -138,7 +138,6 @@
     <!-- MAIN ROLLER CARD -->
     <div class="w-full bg-dndCard/90 border border-gold-600/40 rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden mb-6 md:mb-10">
       
-      <!-- Subtle Decorative Accent -->
       <div class="absolute -top-12 -right-12 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl pointer-events-none"></div>
 
       <!-- Dice Displays Section -->
@@ -175,14 +174,13 @@
         </div>
       </div>
 
-      <!-- Action Buttons (Main Roll & Objections) -->
+      <!-- Action Buttons -->
       <div class="flex flex-col gap-3">
         <button id="main-roll-btn" class="w-full py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-gold-600 via-gold-500 to-gold-600 text-black font-cinzel font-black text-base sm:text-lg md:text-xl shadow-lg shadow-gold-500/20 hover:shadow-gold-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center space-x-2">
           <span>🎲</span>
           <span>ROLL FOR DINNER</span>
         </button>
 
-        <!-- Targeted Objections Bar (Hidden until first main roll) -->
         <div id="main-objection-bar" class="hidden grid grid-cols-2 gap-1.5 sm:gap-2 pt-2 border-t border-dndBorder/60">
           <button id="object-v-btn" class="py-2.5 px-1 sm:px-2 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel font-bold text-[10px] sm:text-xs rounded-lg transition-all flex items-center justify-center text-center">
             ⚔️ Object D6
@@ -210,9 +208,7 @@
         </button>
       </div>
 
-      <!-- History Feed Container -->
       <div id="history-feed" class="max-h-80 overflow-y-auto custom-scrollbar space-y-3 pr-1">
-        <!-- Dynamic History Items Populated Here -->
         <div id="history-empty" class="text-center py-8 text-gray-500 text-sm italic">
           No fate recorded yet. Cast the dice to write history!
         </div>
@@ -237,11 +233,11 @@
 
       <!-- Modal Dice Section -->
       <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
-        <!-- D8 Takeout Version Box -->
+        <!-- D8 Takeout Category Box -->
         <div class="bg-dndBg border border-dndBorder rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
           <span class="text-[10px] sm:text-xs font-cinzel text-gold-500 font-bold uppercase">D8 • Category</span>
           <div id="d8-display" class="text-2xl sm:text-3xl font-cinzel font-extrabold text-gold-400 my-2">?</div>
-          <span id="d8-subtext" class="text-[10px] text-gray-400">Version 1 - 8</span>
+          <span id="d8-subtext" class="text-[10px] text-gray-400">Category 1 - 8</span>
         </div>
 
         <!-- D6 Takeout Restaurant Box -->
@@ -293,7 +289,6 @@
         <button id="close-grimoire-btn" class="text-gray-400 hover:text-white text-2xl font-bold p-1">✕</button>
       </div>
 
-      <!-- Grimoire Tabs -->
       <div class="flex space-x-2 mt-4 border-b border-dndBorder pb-2">
         <button id="tab-home-meals" class="px-3 sm:px-4 py-2 text-xs font-cinzel font-bold rounded-lg bg-gold-500 text-black">
           Home Meals (6x20)
@@ -303,7 +298,6 @@
         </button>
       </div>
 
-      <!-- Grimoire Content Container -->
       <div id="grimoire-content" class="flex-grow overflow-y-auto custom-scrollbar my-4 pr-2 space-y-6">
         <!-- Populated dynamically -->
       </div>
@@ -316,27 +310,26 @@
   </footer>
 
   <script>
-    /* DATA TABLES: 6x20 Home Meals & 8x6 Takeout Restaurants */
     const HOME_MEALS = {
-  1: ["Popcorn Skrimp/Chiken", "Costco Dinner", "Steak Fajitas", "Buffalo Chicken Sandwiches", "Freezer Night", "Chicken Alfredo Pasta Bake", "Cheeseburgers", "Beef Tacos", "Pizza Hotdogs", "Pizza", "Sweet and Sour Chicken", "Quesadillas", "Chili Cheese Dog Bake", "BBQ Pork Ribs", "Philly Cheesesteak", "Lemon Pepper Chicken", "Korean Bulgogi Beef", "Chicken and Dumplings", "Cajun Chicken Sloppy Joe", "Roll For Take-Out"],
-  2: ["Italian Subs", "Shredded Beef Tacos", "Baked Mostaccioli", "Garnett Inspired Sandwiches", "Chicken and Waffles", "Ham and Potato Casserole", "Chicken Carbonara", "Cheeseburger Pasta Skillet", "Freezer Night", "Arroz Con Pollo", "Jambalaya", "Chicken Parmesan", "Lasagna Soup", "BBQ Pulled Pork Wrap", "Chicken Bacon Ranch Wrap", "Pork Shake and Bake", "Tacos of Choice", "Roll For Take-Out", "Quesadillas", "Goulash"],
-  3: ["Steak and Eggs", "Chicken Tater Tot Casserole", "Mac and Cheese with Bacon", "Italian Sausage and Potatoes Skillet", "Taco Casserole", "Chicken Fajitas", "Steak", "Freezer Night", "Steak and Cheese Sub", "Cheeseburgers", "Meatball Subs", "Ramen", "Smothered Hamburger Steaks", "Soup/Bread Bowl", "Chicken Burrito Bowl", "Pulled Pork Sandwiches", "Lamb Gyros", "Chicken and Bacon Ranch Pasta", "Roll For Take-Out", "Chili Dogs"],
-  4: ["Pork Carnitas Tacos", "Cajun Dirty Rice", "FFYS (Fend For Yourself)", "Hamburger Helper", "Roast Chicken", "Chicken Parmesan", "Spaghetti with Meatballs", "Homestyle Boneless Wings", "Shrimp Skewer", "Chicken Fried Rice", "Baked BBQ Chicken", "Freezer Night", "Chicken Cordon Bleu", "Beef Empanadas", "Soup/Bread Bowl", "Stuffed Shells with Beef", "Chicken Caesar Wrap", "Ravioli", "Italian Sub Sandwich", "Roll For Take-Out"],
-  5: ["Teriyaki Chicken Stir-Fry", "Oven-Baked Meatballs", "Chicken Wings", "Beef Burritos", "Shrimp Skewers", "Sausage and Peppers Pasta", "Steak with Mashed Potatoes", "Soup/Bread Bowl", "Lasagna", "Chicken Enchiladas", "Chicken Caesar Wrap", "Pulled Pork Sliders", "Roll For Take-Out", "Chicken with Garlic Honey", "Dutch Oven Pot Roast", "Cajun Chicken Pasta", "Chicken Alfredo Bake", "Classic BLT", "French Dip Sandwich", "Chicken Drumsticks"],
-  6: ["Grilled Chicken Sandwich", "Homemade Chicken Minis", "Beef Nachos Supreme", "Chicken Bacon Pasta Bake", "Soup/Bread Bowl", "Hamburger Steak with Onion Gravy", "Tater Tot Casserole with Ground Beef", "Chicken Drumsticks with BBQ Sauce", "Chicken & Broccoli Alfredo", "Meatballs and Marinara", "Roll For Take-Out", "Beef Chili with Beans", "Maple Glazed Ham Steaks", "Chicken and Rice Casserole", "Freezer Night", "Classic Roast Beef", "Italian Sausage Hoagies", "Steak with Garlic Butter", "Hot Ham & Cheese Sliders", "Buffalo Chicken Mac and Cheese"]
-};
+      1: ["Popcorn Skrimp/Chiken", "Costco Dinner", "Steak Fajitas", "Buffalo Chicken Sandwiches", "Freezer Night", "Chicken Alfredo Pasta Bake", "Cheeseburgers", "Beef Tacos", "Pizza Hotdogs", "Pizza", "Sweet and Sour Chicken", "Quesadillas", "Chili Cheese Dog Bake", "BBQ Pork Ribs", "Philly Cheesesteak", "Lemon Pepper Chicken", "Korean Bulgogi Beef", "Chicken and Dumplings", "Cajun Chicken Sloppy Joe", "Roll For Take-Out"],
+      2: ["Italian Subs", "Shredded Beef Tacos", "Baked Mostaccioli", "Garnett Inspired Sandwiches", "Chicken and Waffles", "Ham and Potato Casserole", "Chicken Carbonara", "Cheeseburger Pasta Skillet", "Freezer Night", "Arroz Con Pollo", "Jambalaya", "Chicken Parmesan", "Lasagna Soup", "BBQ Pulled Pork Wrap", "Chicken Bacon Ranch Wrap", "Pork Shake and Bake", "Tacos of Choice", "Roll For Take-Out", "Quesadillas", "Goulash"],
+      3: ["Steak and Eggs", "Chicken Tater Tot Casserole", "Mac and Cheese with Bacon", "Italian Sausage and Potatoes Skillet", "Taco Casserole", "Chicken Fajitas", "Steak", "Freezer Night", "Steak and Cheese Sub", "Cheeseburgers", "Meatball Subs", "Ramen", "Smothered Hamburger Steaks", "Soup/Bread Bowl", "Chicken Burrito Bowl", "Pulled Pork Sandwiches", "Lamb Gyros", "Chicken and Bacon Ranch Pasta", "Roll For Take-Out", "Chili Dogs"],
+      4: ["Pork Carnitas Tacos", "Cajun Dirty Rice", "FFYS (Fend For Yourself)", "Hamburger Helper", "Roast Chicken", "Chicken Parmesan", "Spaghetti with Meatballs", "Homestyle Boneless Wings", "Shrimp Skewer", "Chicken Fried Rice", "Baked BBQ Chicken", "Freezer Night", "Chicken Cordon Bleu", "Beef Empanadas", "Soup/Bread Bowl", "Stuffed Shells with Beef", "Chicken Caesar Wrap", "Ravioli", "Italian Sub Sandwich", "Roll For Take-Out"],
+      5: ["Teriyaki Chicken Stir-Fry", "Oven-Baked Meatballs", "Chicken Wings", "Beef Burritos", "Shrimp Skewers", "Sausage and Peppers Pasta", "Steak with Mashed Potatoes", "Soup/Bread Bowl", "Lasagna", "Chicken Enchiladas", "Chicken Caesar Wrap", "Pulled Pork Sliders", "Roll For Take-Out", "Chicken with Garlic Honey", "Dutch Oven Pot Roast", "Cajun Chicken Pasta", "Chicken Alfredo Bake", "Classic BLT", "French Dip Sandwich", "Chicken Drumsticks"],
+      6: ["Grilled Chicken Sandwich", "Homemade Chicken Minis", "Beef Nachos Supreme", "Chicken Bacon Pasta Bake", "Soup/Bread Bowl", "Hamburger Steak with Onion Gravy", "Tater Tot Casserole with Ground Beef", "Chicken Drumsticks with BBQ Sauce", "Chicken & Broccoli Alfredo", "Meatballs and Marinara", "Roll For Take-Out", "Beef Chili with Beans", "Maple Glazed Ham Steaks", "Chicken and Rice Casserole", "Freezer Night", "Classic Roast Beef", "Italian Sausage Hoagies", "Steak with Garlic Butter", "Hot Ham & Cheese Sliders", "Buffalo Chicken Mac and Cheese"]
+    };
 
     const TAKEOUT_SPOTS = {
-  1: ["Texas Roadhouse", "Chilis", "Pho Thien Phat", "Takara", "O’Charley’s", "Casa Grande"],
-  2: ["Red Robin", "Outback", "IHOP", "Dennys", "Firehouse Subs", "Subway"],
-  3: ["Cheesecake Factory", "Waffle House", "Cracker Barrel", "Golden Corral", "Tappenyaki", "Chick-Fil-A"],
-  4: ["Zaxbys", "Popeyes", "Anna’s", "Olive Garden", "B-Dubs", "WingStop"],
-  5: ["Qdoba", "AppleBees", "Romas", "NN Burger", "Ramen Time", "Riverbound Cafe"],
-  6: ["Mission BBQ", "Tacos Mexico", "Fat Boys", "Jollibee", "Captain D’s", "Mr.Sub"],
-  7: ["Sakura", "Mod Pizza", "Noddles & Co", "Live Crawfish & Seafood", "Boil Bay", "HogsHead Cafe"],
-  8: ["Fords Garage", "Panda Express", "Buz & Ned’s Real BBQ", "China House", "Little Caesar’s", "Backwoodz BBQ"]
-};
-    /* CRYPTOGRAPHICALLY SECURE RANDOM NUMBER GENERATOR */
+      1: ["Texas Roadhouse", "Chilis", "Pho Thien Phat", "Takara", "O’Charley’s", "Casa Grande"],
+      2: ["Red Robin", "Outback", "IHOP", "Dennys", "Firehouse Subs", "Subway"],
+      3: ["Cheesecake Factory", "Waffle House", "Cracker Barrel", "Golden Corral", "Tappenyaki", "Chick-Fil-A"],
+      4: ["Zaxbys", "Popeyes", "Anna’s", "Olive Garden", "B-Dubs", "WingStop"],
+      5: ["Qdoba", "AppleBees", "Romas", "NN Burger", "Ramen Time", "Riverbound Cafe"],
+      6: ["Mission BBQ", "Tacos Mexico", "Fat Boys", "Jollibee", "Captain D’s", "Mr.Sub"],
+      7: ["Sakura", "Mod Pizza", "Noddles & Co", "Live Crawfish & Seafood", "Boil Bay", "HogsHead Cafe"],
+      8: ["Fords Garage", "Panda Express", "Buz & Ned’s Real BBQ", "China House", "Little Caesar’s", "Backwoodz BBQ"]
+    };
+
     function getRandomInt(min, max) {
       const range = max - min + 1;
       const array = new Uint32Array(1);
@@ -344,12 +337,10 @@
       return min + (array[0] % range);
     }
 
-    /* STATE MANAGEMENT */
     let currentMainRoll = { version: null, mealIndex: null, mealName: null };
-    let currentTakeoutRoll = { version: null, spotIndex: null, restaurantName: null, categoryName: null };
+    let currentTakeoutRoll = { version: null, spotIndex: null, restaurantName: null };
     let historyLog = [];
 
-    /* WEB AUDIO SYNTHESIZER FOR DICE SOUNDS */
     class AudioEffects {
       constructor() {
         this.ctx = null;
@@ -434,8 +425,8 @@
     function addHistoryEntry(entry) {
       entry.id = Date.now() + Math.random().toString(36).substr(2, 4);
       entry.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      historyLog.unshift(entry); // Newest on top
-      if (historyLog.length > 50) historyLog.pop(); // Limit to 50
+      historyLog.unshift(entry);
+      if (historyLog.length > 50) historyLog.pop();
       saveHistory();
       renderHistory();
     }
@@ -468,16 +459,15 @@
         currentTakeoutRoll = {
           version: item.version,
           spotIndex: item.spotIndex,
-          categoryName: item.categoryName,
           restaurantName: item.restaurantName
         };
         getEl('d8-display').textContent = item.version;
         getEl('modal-d6-display').textContent = item.spotIndex;
-        getEl('d8-subtext').textContent = item.categoryName;
+        getEl('d8-subtext').textContent = `Category ${item.version}`;
         getEl('modal-d6-subtext').textContent = `Option #${item.spotIndex}`;
 
         getEl('takeout-result-title').textContent = item.restaurantName;
-        getEl('takeout-result-sub').textContent = `${item.categoryName} • Category ${item.version}, Spot #${item.spotIndex}`;
+        getEl('takeout-result-sub').textContent = `Category ${item.version}, Spot #${item.spotIndex}`;
         getEl('takeout-objection-bar').classList.remove('hidden');
         openTakeoutModal();
       }
@@ -489,7 +479,7 @@
       if (!item) return;
 
       if (item.type === 'TAKEOUT_ROLL') {
-        if (target === 'version') executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true);
+        if (target === 'category') executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true);
         else if (target === 'spot') executeTakeoutRoll(currentTakeoutRoll.version, null, true);
       } else {
         if (target === 'version') executeMainRoll(null, currentMainRoll.mealIndex, true);
@@ -528,8 +518,8 @@
           details = `<span class="text-xs text-gray-400">Previous: <span class="line-through text-gray-500">${item.oldResult}</span> ➔ New: <strong class="text-gold-400">${item.newResult}</strong></span>`;
         } else if (item.type === 'TAKEOUT_ROLL') {
           badge = `<span class="px-2 py-0.5 text-[10px] font-bold font-cinzel rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">🥡 Take-Out</span>`;
-          title = `<span class="font-bold text-amber-200">${item.restaurantName}</span> <span class="text-xs text-gray-400">(${item.categoryName})</span>`;
-          details = `<span class="text-xs text-gray-400">D8: <strong class="text-amber-400">V${item.version}</strong> | D6: <strong class="text-amber-400">#${item.spotIndex}</strong></span>`;
+          title = `<span class="font-bold text-amber-200">${item.restaurantName}</span>`;
+          details = `<span class="text-xs text-gray-400">D8: <strong class="text-amber-400">Cat ${item.version}</strong> | D6: <strong class="text-amber-400">#${item.spotIndex}</strong></span>`;
         }
 
         const isTakeout = item.type === 'TAKEOUT_ROLL';
@@ -585,7 +575,6 @@
       });
     }
 
-    /* Perform Main Roll */
     async function executeMainRoll(forceV = null, forceM = null, isObjection = false) {
       const v = forceV || getRandomInt(1, 6);
       const m = forceM || getRandomInt(1, 20);
@@ -610,7 +599,6 @@
         mealName: HOME_MEALS[v][m - 1]
       };
 
-      // Display UI Updates
       getEl('d6-subtext').textContent = `Version ${v} Selected`;
       getEl('d20-subtext').textContent = `Slot #${m} Selected`;
 
@@ -629,7 +617,6 @@
 
       getEl('main-objection-bar').classList.remove('hidden');
 
-      // Log to history
       if (isObjection) {
         addHistoryEntry({
           type: 'OBJECTION',
@@ -650,7 +637,6 @@
       }
     }
 
-    /* Perform Takeout Sub-Roll */
     async function executeTakeoutRoll(forceV = null, forceS = null, isObjection = false) {
       const v = forceV || getRandomInt(1, 8);
       const s = forceS || getRandomInt(1, 6);
@@ -666,23 +652,20 @@
 
       await Promise.all(promises);
 
-      const categoryData = TAKEOUT_SPOTS[v];
-      const spotName = categoryData.spots[s - 1];
-
+      const spotName = TAKEOUT_SPOTS[v][s - 1];
       const oldSpot = currentTakeoutRoll.restaurantName;
 
       currentTakeoutRoll = {
         version: v,
         spotIndex: s,
-        categoryName: categoryData.category,
         restaurantName: spotName
       };
 
-      getEl('d8-subtext').textContent = categoryData.category;
+      getEl('d8-subtext').textContent = `Category ${v}`;
       getEl('modal-d6-subtext').textContent = `Option #${s}`;
 
       getEl('takeout-result-title').textContent = spotName;
-      getEl('takeout-result-sub').textContent = `${categoryData.category} • Category ${v}, Spot #${s}`;
+      getEl('takeout-result-sub').textContent = `Category ${v}, Spot #${s}`;
 
       getEl('takeout-objection-bar').classList.remove('hidden');
 
@@ -694,7 +677,6 @@
           newResult: spotName,
           version: v,
           spotIndex: s,
-          categoryName: categoryData.category,
           restaurantName: spotName
         });
       } else {
@@ -702,7 +684,6 @@
           type: 'TAKEOUT_ROLL',
           version: v,
           spotIndex: s,
-          categoryName: categoryData.category,
           restaurantName: spotName
         });
       }
@@ -748,16 +729,16 @@
         }
       } else {
         for (let v = 1; v <= 8; v++) {
-          const cat = TAKEOUT_SPOTS[v];
+          const spots = TAKEOUT_SPOTS[v];
           const sec = document.createElement('div');
           sec.className = "bg-dndBg border border-dndBorder rounded-xl p-4";
           sec.innerHTML = `
             <h4 class="font-cinzel font-bold text-gold-400 text-sm mb-3 pb-1 border-b border-dndBorder flex justify-between">
-              <span>Category ${v}: ${cat.category}</span>
+              <span>Category ${v}</span>
               <span class="text-xs text-gray-500 font-sans font-normal">6 Spots</span>
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              ${cat.spots.map((s, idx) => `
+              ${spots.map((s, idx) => `
                 <div class="text-xs p-2 rounded bg-dndCard/60 border border-dndBorder/40 flex items-center space-x-2">
                   <span class="font-bold text-gold-500/80 w-5">#${idx + 1}</span>
                   <span class="text-gray-300">${s}</span>
@@ -788,24 +769,18 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadHistory();
 
-      // Main Roll Button
       getEl('main-roll-btn').addEventListener('click', () => executeMainRoll());
 
-      // Main Objections
       getEl('object-v-btn').addEventListener('click', () => executeMainRoll(null, currentMainRoll.mealIndex, true));
       getEl('object-m-btn').addEventListener('click', () => executeMainRoll(currentMainRoll.version, null, true));
 
-      // Takeout Roll Button
       getEl('takeout-roll-btn').addEventListener('click', () => executeTakeoutRoll());
 
-      // Takeout Objections
       getEl('takeout-obj-cat-btn').addEventListener('click', () => executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true));
       getEl('takeout-obj-rest-btn').addEventListener('click', () => executeTakeoutRoll(currentTakeoutRoll.version, null, true));
 
-      // Modal Closers
       getEl('close-takeout-modal').addEventListener('click', closeTakeoutModal);
 
-      // Grimoire Controls
       getEl('open-grimoire-btn').addEventListener('click', openGrimoire);
       getEl('close-grimoire-btn').addEventListener('click', closeGrimoire);
 
@@ -821,7 +796,6 @@
         renderGrimoire('takeout');
       });
 
-      // Clear History
       getEl('clear-history-btn').addEventListener('click', () => {
         if (confirm("Are you sure you wish to erase the Scroll of Fate history?")) {
           historyLog = [];
@@ -830,12 +804,10 @@
         }
       });
 
-      // Register Dynamic PWA Service Worker Blob
       setupPWA();
     });
 
     function setupPWA() {
-      // Create inline Web Manifest
       const manifestObj = {
         name: "Roll for Dinner PWA",
         short_name: "RollForDinner",
@@ -853,10 +825,9 @@
       const manifestBlob = new Blob([manifestStr], { type: 'application/json' });
       getEl('pwa-manifest').href = URL.createObjectURL(manifestBlob);
 
-      // Create inline Service Worker
       if ('serviceWorker' in navigator) {
         const swCode = `
-          const CACHE_NAME = 'roll-for-dinner-v2';
+          const CACHE_NAME = 'roll-for-dinner-v3';
           self.addEventListener('install', e => {
             e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./'])));
           });
@@ -869,7 +840,6 @@
         navigator.serviceWorker.register(swUrl).catch(() => {});
       }
 
-      // PWA Install Prompt Button Handler
       let deferredPrompt;
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
