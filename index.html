@@ -812,17 +812,21 @@
     });
 
     function setupPWA() {
+      // Build an absolute URL so iOS Safari and Service Workers resolve the path properly
+      const iconUrl = new URL("dice-twenty-faces-twenty.png", window.location.href).href;
+
       const manifestObj = {
-        name: "Roll for Dinner PWA",
-        short_name: "RollForDinner",
+        name: "Roll for Dinner",           // Full title for splash screens
+        short_name: "Roll Dinner",         // Label displayed under the home screen icon
         start_url: "./index.html",
         display: "standalone",
         background_color: "#121216",
         theme_color: "#121216",
         icons: [{
-          src: "dice-twenty-faces-twenty.png",
+          src: iconUrl,
           sizes: "512x512",
-          type: "image/png"
+          type: "image/png",
+          purpose: "any maskable"
         }]
       };
       const manifestStr = JSON.stringify(manifestObj);
@@ -831,9 +835,9 @@
 
       if ('serviceWorker' in navigator) {
         const swCode = `
-          const CACHE_NAME = 'roll-for-dinner-v4';
+          const CACHE_NAME = 'roll-for-dinner-v5';
           self.addEventListener('install', e => {
-            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./', 'dice-twenty-faces-twenty.png'])));
+            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./', '${iconUrl}'])));
           });
           self.addEventListener('fetch', e => {
             e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
