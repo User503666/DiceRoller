@@ -183,15 +183,12 @@
         </button>
 
         <!-- Targeted Objections Bar (Hidden until first main roll) -->
-        <div id="main-objection-bar" class="hidden grid grid-cols-3 gap-1.5 sm:gap-2 pt-2 border-t border-dndBorder/60">
+        <div id="main-objection-bar" class="hidden grid grid-cols-2 gap-1.5 sm:gap-2 pt-2 border-t border-dndBorder/60">
           <button id="object-v-btn" class="py-2.5 px-1 sm:px-2 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel font-bold text-[10px] sm:text-xs rounded-lg transition-all flex items-center justify-center text-center">
             ⚔️ Object D6
           </button>
           <button id="object-m-btn" class="py-2.5 px-1 sm:px-2 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel font-bold text-[10px] sm:text-xs rounded-lg transition-all flex items-center justify-center text-center">
             ⚔️ Object D20
-          </button>
-          <button id="object-both-btn" class="py-2.5 px-1 sm:px-2 bg-dndRed/80 hover:bg-dndRed text-white font-cinzel font-bold text-[10px] sm:text-xs rounded-lg transition-all flex items-center justify-center text-center shadow-md">
-            💥 Object Both
           </button>
         </div>
       </div>
@@ -271,15 +268,12 @@
           🎲 Roll Take-Out Dice
         </button>
 
-        <div id="takeout-objection-bar" class="hidden grid grid-cols-3 gap-1.5 sm:gap-2 pt-2 border-t border-dndBorder">
+        <div id="takeout-objection-bar" class="hidden grid grid-cols-2 gap-1.5 sm:gap-2 pt-2 border-t border-dndBorder">
           <button id="takeout-obj-cat-btn" class="py-2 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel text-[10px] sm:text-[11px] font-bold rounded-lg text-center">
             ⚔️ Object D8
           </button>
           <button id="takeout-obj-rest-btn" class="py-2 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel text-[10px] sm:text-[11px] font-bold rounded-lg text-center">
             ⚔️ Object D6
-          </button>
-          <button id="takeout-obj-both-btn" class="py-2 px-1 bg-dndRed text-white font-cinzel text-[10px] sm:text-[11px] font-bold rounded-lg text-center shadow">
-            💥 Object Both
           </button>
         </div>
       </div>
@@ -497,11 +491,9 @@
       if (item.type === 'TAKEOUT_ROLL') {
         if (target === 'version') executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true);
         else if (target === 'spot') executeTakeoutRoll(currentTakeoutRoll.version, null, true);
-        else executeTakeoutRoll(null, null, true);
       } else {
         if (target === 'version') executeMainRoll(null, currentMainRoll.mealIndex, true);
         else if (target === 'meal') executeMainRoll(currentMainRoll.version, null, true);
-        else executeMainRoll(null, null, true);
       }
     }
 
@@ -564,9 +556,6 @@
             </button>
             <button onclick="objectToHistoryRoll('${item.id}', '${isTakeout ? 'spot' : 'meal'}')" class="px-2 py-1 text-[10px] font-semibold rounded bg-dndRed/20 hover:bg-dndRed/40 border border-dndRed/50 text-red-300 transition-colors">
               ⚔️ Obj ${isTakeout ? 'D6' : 'D20'}
-            </button>
-            <button onclick="objectToHistoryRoll('${item.id}', 'both')" class="px-2 py-1 text-[10px] font-semibold rounded bg-dndRed/80 hover:bg-dndRed text-white transition-colors">
-              💥 Obj Both
             </button>
           </div>
         `;
@@ -805,7 +794,6 @@
       // Main Objections
       getEl('object-v-btn').addEventListener('click', () => executeMainRoll(null, currentMainRoll.mealIndex, true));
       getEl('object-m-btn').addEventListener('click', () => executeMainRoll(currentMainRoll.version, null, true));
-      getEl('object-both-btn').addEventListener('click', () => executeMainRoll(null, null, true));
 
       // Takeout Roll Button
       getEl('takeout-roll-btn').addEventListener('click', () => executeTakeoutRoll());
@@ -813,7 +801,6 @@
       // Takeout Objections
       getEl('takeout-obj-cat-btn').addEventListener('click', () => executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true));
       getEl('takeout-obj-rest-btn').addEventListener('click', () => executeTakeoutRoll(currentTakeoutRoll.version, null, true));
-      getEl('takeout-obj-both-btn').addEventListener('click', () => executeTakeoutRoll(null, null, true));
 
       // Modal Closers
       getEl('close-takeout-modal').addEventListener('click', closeTakeoutModal);
