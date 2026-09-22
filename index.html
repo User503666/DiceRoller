@@ -324,25 +324,24 @@
   <script>
     /* DATA TABLES: 6x20 Home Meals & 8x6 Takeout Restaurants */
     const HOME_MEALS = {
-      1: ["Classic Spaghetti Bolognese", "Chicken Alfredo Pasta", "Beef Tacos", "Grilled Cheese & Tomato Soup", "Baked Salmon with Asparagus", "Chicken Caesar Salad", "Homemade Pepperoni Pizza", "Beef Stir-Fry", "Vegetable Curry", "Pork Chops with Applesauce", "Turkey Burgers & Fries", "Chicken Quesadillas", "Fettuccine Carbonara", "Loaded Baked Potatoes", "BBQ Pulled Pork Sandwiches", "Meatball Sub Sandwich", "Shrimp Scampi", "Chicken Fajitas", "Vegetable Stir-Fry", "Roll For Take-Out"],
-      2: ["Pad Thai", "Chicken Tikka Masala", "Beef Stroganoff", "Greek Gyros / Wraps", "Shepherd's Pie", "Teriyaki Chicken Bowl", "Fish & Chips", "Chili Con Carne", "Eggplant Parmesan", "Chicken Parmesan", "Beef & Broccoli", "French Dip Sandwiches", "Clam Chowder in Bread Bowl", "Ramen with Soft Boiled Egg", "Baked Ziti", "Sausage & Peppers", "Chicken Noodle Soup", "Spinach Stuffed Chicken", "Pork Tenderloin", "Roll For Take-Out"],
-      3: ["Butter Chicken", "Sushi Bowls", "Enchiladas", "Swedish Meatballs", "Shrimp Tacos", "Buffalo Chicken Wraps", "Caprese Pasta", "Beef Chimichangas", "Lentil Soup & Crusty Bread", "Chicken Marsala", "Stuffed Bell Peppers", "Gnocchi in Brown Butter", "Carnitas Bowl", "Greek Lemon Chicken", "Jambalaya", "BBQ Ribs", "Fish Tacos", "Beef Empanadas", "Vegetable Lasagna", "Roll For Take-Out"],
-      4: ["Katsu Curry", "Philly Cheesesteak", "Korean Fried Chicken", "Mushroom Risotto", "Shrimp Po' Boy", "Chicken Enchilada Casserole", "Beef Kebabs", "Pesto Pasta with Sun-Dried Tomatoes", "Pork Carnitas Tacos", "Chicken Piccata", "Falafel Pita Wraps", "BBQ Chicken Pizza", "Birria Tacos", "Turkey Chili", "Lobster / Crab Roll", "Sweet & Sour Chicken", "Beef Gyros", "Thai Green Curry", "Clam Linguine", "Roll For Take-Out"],
-      5: ["Beef Pho", "Chicken Fried Rice", "Baked Cod with Herb Crust", "Chicken Pot Pie", "Slow Cooker Pot Roast", "Tuscan Garlic Chicken", "Black Bean Burgers", "Shrimp Alfredo", "Pork Fried Rice", "Baked Macaroni & Cheese", "Chicken Souvlaki", "Beef Noodle Soup", "Crispy Tofu Stir-Fry", "Sausage & Mash", "Spicy Tuna Bowls", "Chicken Cordon Bleu", "Cauliflower Steak", "Beef Burritos", "Vegetable Chow Mein", "Roll For Take-Out"],
-      6: ["Bavarian Bratwurst & Kraut", "Chicken & Waffles", "Beef Shawarma Wraps", "Honey Mustard Glazed Salmon", "Shrimp Fajita Bowls", "Garlic Butter Steak Bites", "BBQ Beef Brisket", "Chicken Korma", "Vegetable Lo Mein", "Turkey Meatloaf", "Fish & Shrimp Paella", "Chicken Club Sandwich", "Beef Nachos Supreme", "Spinach & Feta Pie (Spanakopita)", "Teriyaki Salmon", "Chicken Chimichurri", "Pork Belly Bun / Bao", "Mushroom Burger", "Seafood Chowder", "Roll For Take-Out"]
-    };
+  1: ["Popcorn Skrimp/Chiken", "Costco Dinner", "Steak Fajitas", "Buffalo Chicken Sandwiches", "Freezer Night", "Chicken Alfredo Pasta Bake", "Cheeseburgers", "Beef Tacos", "Pizza Hotdogs", "Pizza", "Sweet and Sour Chicken", "Quesadillas", "Chili Cheese Dog Bake", "BBQ Pork Ribs", "Philly Cheesesteak", "Lemon Pepper Chicken", "Korean Bulgogi Beef", "Chicken and Dumplings", "Cajun Chicken Sloppy Joe", "Roll For Take-Out"],
+  2: ["Italian Subs", "Shredded Beef Tacos", "Baked Mostaccioli", "Garnett Inspired Sandwiches", "Chicken and Waffles", "Ham and Potato Casserole", "Chicken Carbonara", "Cheeseburger Pasta Skillet", "Freezer Night", "Arroz Con Pollo", "Jambalaya", "Chicken Parmesan", "Lasagna Soup", "BBQ Pulled Pork Wrap", "Chicken Bacon Ranch Wrap", "Pork Shake and Bake", "Tacos of Choice", "Roll For Take-Out", "Quesadillas", "Goulash"],
+  3: ["Steak and Eggs", "Chicken Tater Tot Casserole", "Mac and Cheese with Bacon", "Italian Sausage and Potatoes Skillet", "Taco Casserole", "Chicken Fajitas", "Steak", "Freezer Night", "Steak and Cheese Sub", "Cheeseburgers", "Meatball Subs", "Ramen", "Smothered Hamburger Steaks", "Soup/Bread Bowl", "Chicken Burrito Bowl", "Pulled Pork Sandwiches", "Lamb Gyros", "Chicken and Bacon Ranch Pasta", "Roll For Take-Out", "Chili Dogs"],
+  4: ["Pork Carnitas Tacos", "Cajun Dirty Rice", "FFYS (Fend For Yourself)", "Hamburger Helper", "Roast Chicken", "Chicken Parmesan", "Spaghetti with Meatballs", "Homestyle Boneless Wings", "Shrimp Skewer", "Chicken Fried Rice", "Baked BBQ Chicken", "Freezer Night", "Chicken Cordon Bleu", "Beef Empanadas", "Soup/Bread Bowl", "Stuffed Shells with Beef", "Chicken Caesar Wrap", "Ravioli", "Italian Sub Sandwich", "Roll For Take-Out"],
+  5: ["Teriyaki Chicken Stir-Fry", "Oven-Baked Meatballs", "Chicken Wings", "Beef Burritos", "Shrimp Skewers", "Sausage and Peppers Pasta", "Steak with Mashed Potatoes", "Soup/Bread Bowl", "Lasagna", "Chicken Enchiladas", "Chicken Caesar Wrap", "Pulled Pork Sliders", "Roll For Take-Out", "Chicken with Garlic Honey", "Dutch Oven Pot Roast", "Cajun Chicken Pasta", "Chicken Alfredo Bake", "Classic BLT", "French Dip Sandwich", "Chicken Drumsticks"],
+  6: ["Grilled Chicken Sandwich", "Homemade Chicken Minis", "Beef Nachos Supreme", "Chicken Bacon Pasta Bake", "Soup/Bread Bowl", "Hamburger Steak with Onion Gravy", "Tater Tot Casserole with Ground Beef", "Chicken Drumsticks with BBQ Sauce", "Chicken & Broccoli Alfredo", "Meatballs and Marinara", "Roll For Take-Out", "Beef Chili with Beans", "Maple Glazed Ham Steaks", "Chicken and Rice Casserole", "Freezer Night", "Classic Roast Beef", "Italian Sausage Hoagies", "Steak with Garlic Butter", "Hot Ham & Cheese Sliders", "Buffalo Chicken Mac and Cheese"]
+};
 
     const TAKEOUT_SPOTS = {
-      1: { category: "Mexican & Tex-Mex", spots: ["Taco Bell", "Chipotle", "Qdoba", "Local Taqueria", "Moe's Southwest Grill", "Del Taco"] },
-      2: { category: "Asian & Noodles", spots: ["Panda Express", "P.F. Chang's", "Local Thai Bistro", "Ramen Noodle Bar", "Pei Wei", "Sushi Joint"] },
-      3: { category: "Pizza & Italian", spots: ["Domino's", "Papa John's", "Pizza Hut", "Little Caesars", "Local Pizzeria", "Olive Garden"] },
-      4: { category: "American & Burgers", spots: ["McDonald's", "Wendy's", "Five Guys", "In-N-Out / Shake Shack", "Burger King", "Red Robin"] },
-      5: { category: "Chicken & BBQ", spots: ["Chick-fil-A", "Raising Cane's", "Popeyes", "Wingstop", "KFC", "Local BBQ Pit"] },
-      6: { category: "Mediterranean & Middle Eastern", spots: ["Halal Guys", "Cava", "Zoe's Kitchen", "Local Gyro House", "Shawarma Grill", "Falafel Spot"] },
-      7: { category: "Sandwiches & Subs", spots: ["Subway", "Jersey Mike's", "Jimmy John's", "Firehouse Subs", "Panera Bread", "Potbelly"] },
-      8: { category: "Indian & Curry", spots: ["Local Curry House", "Biryani Express", "Tandoori Grill", "Naan & Spice", "Dosa Corner", "Bombay Bistro"] }
-    };
-
+  1: ["Texas Roadhouse", "Chilis", "Pho Thien Phat", "Takara", "O’Charley’s", "Casa Grande"],
+  2: ["Red Robin", "Outback", "IHOP", "Dennys", "Firehouse Subs", "Subway"],
+  3: ["Cheesecake Factory", "Waffle House", "Cracker Barrel", "Golden Corral", "Tappenyaki", "Chick-Fil-A"],
+  4: ["Zaxbys", "Popeyes", "Anna’s", "Olive Garden", "B-Dubs", "WingStop"],
+  5: ["Qdoba", "AppleBees", "Romas", "NN Burger", "Ramen Time", "Riverbound Cafe"],
+  6: ["Mission BBQ", "Tacos Mexico", "Fat Boys", "Jollibee", "Captain D’s", "Mr.Sub"],
+  7: ["Sakura", "Mod Pizza", "Noddles & Co", "Live Crawfish & Seafood", "Boil Bay", "HogsHead Cafe"],
+  8: ["Fords Garage", "Panda Express", "Buz & Ned’s Real BBQ", "China House", "Little Caesar’s", "Backwoodz BBQ"]
+};
     /* CRYPTOGRAPHICALLY SECURE RANDOM NUMBER GENERATOR */
     function getRandomInt(min, max) {
       const range = max - min + 1;
