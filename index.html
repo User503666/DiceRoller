@@ -344,6 +344,7 @@
     let currentMainRoll = { version: null, mealIndex: null, mealName: null };
     let currentTakeoutRoll = { version: null, spotIndex: null, restaurantName: null };
     let historyLog = [];
+    let entryToRemoveOnObjection = null;
 
     class AudioEffects {
       constructor() {
@@ -426,7 +427,10 @@
       } catch (e) {}
     }
 
-    function addHistoryEntry(entry) {
+    function addHistoryEntry(entry, removeTargetId = null) {
+      if (removeTargetId) {
+        historyLog = historyLog.filter(item => item.id !== removeTargetId);
+      }
       entry.id = Date.now() + Math.random().toString(36).substr(2, 4);
       entry.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       historyLog.unshift(entry);
@@ -479,6 +483,7 @@
 
     function objectToHistoryRoll(id, target) {
       selectHistoryRoll(id);
+      entryToRemoveOnObjection = id;
       const item = historyLog.find(e => e.id === id);
       if (!item) return;
 
@@ -630,7 +635,8 @@
           version: v,
           mealIndex: m,
           mealName: currentMainRoll.mealName
-        });
+        }, entryToRemoveOnObjection);
+        entryToRemoveOnObjection = null;
       } else {
         addHistoryEntry({
           type: 'MAIN_ROLL',
@@ -682,7 +688,8 @@
           version: v,
           spotIndex: s,
           restaurantName: spotName
-        });
+        }, entryToRemoveOnObjection);
+        entryToRemoveOnObjection = null;
       } else {
         addHistoryEntry({
           type: 'TAKEOUT_ROLL',
