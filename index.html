@@ -22,6 +22,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Load Ably SDK -->
+  <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -334,6 +337,12 @@
       8: ["Fords Garage", "Panda Express", "Buz & Ned’s Real BBQ", "China House", "Little Caesar’s", "Backwoodz BBQ"]
     };
 
+    // --- ABLY REAL-TIME INITIALIZATION ---
+    const ABLY_API_KEY = 'GNP9bg.B6Oz2A:GfmivvrdM4i7dBf_B4r9UjvnyCoHYFimCUhtzoy-gU0';
+    const myClientId = 'Adventurer-' + Math.floor(1000 + Math.random() * 9000);
+    const ably = new Ably.Realtime({ key: ABLY_API_KEY, clientId: myClientId });
+    const channel = ably.channels.get('roll-for-dinner-room');
+
     function getRandomInt(min, max) {
       const range = max - min + 1;
       const array = new Uint32Array(1);
@@ -427,8 +436,8 @@
     }
 
     function addHistoryEntry(entry) {
-      entry.id = Date.now() + Math.random().toString(36).substr(2, 4);
-      entry.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (!entry.id) entry.id = Date.now() + Math.random().toString(36).substr(2, 4);
+      if (!entry.timestamp) entry.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       historyLog.unshift(entry);
       if (historyLog.length > 50) historyLog.pop();
       saveHistory();
@@ -483,11 +492,11 @@
       if (!item) return;
 
       if (item.type === 'TAKEOUT_ROLL') {
-        if (target === 'category') executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true);
-        else if (target === 'spot') executeTakeoutRoll(currentTakeoutRoll.version, null, true);
+        if (target === 'category') requestTakeoutRoll(null, currentTakeoutRoll.spotIndex, true);
+        else if (target === 'spot') requestTakeoutRoll(currentTakeoutRoll.version, null, true);
       } else {
-        if (target === 'version') executeMainRoll(null, currentMainRoll.mealIndex, true);
-        else if (target === 'meal') executeMainRoll(currentMainRoll.version, null, true);
+        if (target === 'version') requestMainRoll(null, currentMainRoll.mealIndex, true);
+        else if (target === 'meal') requestMainRoll(currentMainRoll.version, null, true);
       }
     }
 
@@ -579,10 +588,41 @@
       });
     }
 
-    async function executeMainRoll(forceV = null, forceM = null, isObjection = false) {
+    // --- REAL-TIME BROADCAST TRIGGER FUNCTIONS ---
+    function requestMainRoll(forceV = null, forceM = null, isObjection = false) {
       const v = forceV || getRandomInt(1, 6);
       const m = forceM || getRandomInt(1, 20);
 
+      channel.publish('main-roll-event', {
+        v: v,
+        m: m,
+        forceV: forceV,
+        forceM: forceM,
+        isObjection: isObjection,
+        sender: myClientId
+      });
+    }
+
+    function requestTakeoutRoll(forceV = null, forceS = null, isObjection = false) {
+      const v = forceV || getRandomInt(1, 8);
+      const s = forceS || getRandomInt(1, 6);
+
+      channel.publish('takeout-roll-event', {
+        v: v,
+        s: s,
+        forceV: forceV,
+        forceS: forceS,
+        isObjection: isObjection,
+        sender: myClientId
+      });
+    }
+
+    function requestClearHistory() {
+      channel.publish('clear-history-event', { sender: myClientId });
+    }
+
+    // --- LOCAL EXECUTION OF REAL-TIME EVENTS ---
+    async function executeMainRoll(v, m, forceV = null, forceM = null, isObjection = false) {
       const d6El = getEl('d6-display');
       const d20El = getEl('d20-display');
 
@@ -641,10 +681,7 @@
       }
     }
 
-    async function executeTakeoutRoll(forceV = null, forceS = null, isObjection = false) {
-      const v = forceV || getRandomInt(1, 8);
-      const s = forceS || getRandomInt(1, 6);
-
+    async function executeTakeoutRoll(v, s, forceV = null, forceS = null, isObjection = false) {
       const d8El = getEl('d8-display');
       const d6El = getEl('modal-d6-display');
 
@@ -692,6 +729,23 @@
         });
       }
     }
+
+    // --- ABLY CHANNEL SUBSCRIBERS ---
+    channel.subscribe('main-roll-event', (message) => {
+      const { v, m, forceV, forceM, isObjection } = message.data;
+      executeMainRoll(v, m, forceV, forceM, isObjection);
+    });
+
+    channel.subscribe('takeout-roll-event', (message) => {
+      const { v, s, forceV, forceS, isObjection } = message.data;
+      executeTakeoutRoll(v, s, forceV, forceS, isObjection);
+    });
+
+    channel.subscribe('clear-history-event', () => {
+      historyLog = [];
+      saveHistory();
+      renderHistory();
+    });
 
     function openTakeoutModal() {
       const modal = getEl('takeout-modal');
@@ -773,15 +827,15 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadHistory();
 
-      getEl('main-roll-btn').addEventListener('click', () => executeMainRoll());
+      getEl('main-roll-btn').addEventListener('click', () => requestMainRoll());
 
-      getEl('object-v-btn').addEventListener('click', () => executeMainRoll(null, currentMainRoll.mealIndex, true));
-      getEl('object-m-btn').addEventListener('click', () => executeMainRoll(currentMainRoll.version, null, true));
+      getEl('object-v-btn').addEventListener('click', () => requestMainRoll(null, currentMainRoll.mealIndex, true));
+      getEl('object-m-btn').addEventListener('click', () => requestMainRoll(currentMainRoll.version, null, true));
 
-      getEl('takeout-roll-btn').addEventListener('click', () => executeTakeoutRoll());
+      getEl('takeout-roll-btn').addEventListener('click', () => requestTakeoutRoll());
 
-      getEl('takeout-obj-cat-btn').addEventListener('click', () => executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true));
-      getEl('takeout-obj-rest-btn').addEventListener('click', () => executeTakeoutRoll(currentTakeoutRoll.version, null, true));
+      getEl('takeout-obj-cat-btn').addEventListener('click', () => requestTakeoutRoll(null, currentTakeoutRoll.spotIndex, true));
+      getEl('takeout-obj-rest-btn').addEventListener('click', () => requestTakeoutRoll(currentTakeoutRoll.version, null, true));
 
       getEl('close-takeout-modal').addEventListener('click', closeTakeoutModal);
 
@@ -801,23 +855,27 @@
       });
 
       getEl('clear-history-btn').addEventListener('click', () => {
-        if (confirm("Are you sure you wish to erase the Scroll of Fate history?")) {
-          historyLog = [];
-          saveHistory();
-          renderHistory();
+        if (confirm("Are you sure you wish to erase the Scroll of Fate history across all devices?")) {
+          requestClearHistory();
         }
       });
 
       setupPWA();
     });
 
+    // Mobile background reconnect handling
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        ably.connection.connect();
+      }
+    });
+
     function setupPWA() {
-      // Build an absolute URL so iOS Safari and Service Workers resolve the path properly
       const iconUrl = new URL("dice-twenty-faces-twenty.png", window.location.href).href;
 
       const manifestObj = {
-        name: "Roll for Dinner",           // Full title for splash screens
-        short_name: "Roll4Dinner",         // Label displayed under the home screen icon
+        name: "Roll for Dinner",
+        short_name: "Roll4Dinner",
         start_url: "./index.html",
         display: "standalone",
         background_color: "#121216",
@@ -864,5 +922,7 @@
     }
   </script>
 
+</body>
+</html>
 </body>
 </html>
