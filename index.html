@@ -22,8 +22,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Load Ably SDK -->
-  <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+  <!-- Load Ably SDK (Updated CDN Path) -->
+  <script src="https://cdn.ably.com/lib/ably.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -104,9 +104,6 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .gold-border {
-      border-image: linear-gradient(to bottom, #ca8a04, #854d0e) 1;
-    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased selection:bg-gold-500 selection:text-black">
@@ -144,7 +141,6 @@
 
     <!-- MAIN ROLLER CARD -->
     <div class="w-full bg-dndCard/90 border border-gold-600/40 rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden mb-6 md:mb-10">
-      
       <div class="absolute -top-12 -right-12 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl pointer-events-none"></div>
 
       <!-- Dice Displays Section -->
@@ -238,16 +234,13 @@
         <p class="text-xs text-gray-400">Roll D8 (Category) & D6 (Restaurant) to determine your feast!</p>
       </div>
 
-      <!-- Modal Dice Section -->
       <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
-        <!-- D8 Takeout Category Box -->
         <div class="bg-dndBg border border-dndBorder rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
           <span class="text-[10px] sm:text-xs font-cinzel text-gold-500 font-bold uppercase">D8 • Category</span>
           <div id="d8-display" class="text-2xl sm:text-3xl font-cinzel font-extrabold text-gold-400 my-2">?</div>
           <span id="d8-subtext" class="text-[10px] text-gray-400">Category 1 - 8</span>
         </div>
 
-        <!-- D6 Takeout Restaurant Box -->
         <div class="bg-dndBg border border-dndBorder rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
           <span class="text-[10px] sm:text-xs font-cinzel text-gold-500 font-bold uppercase">D6 • Restaurant</span>
           <div id="modal-d6-display" class="text-2xl sm:text-3xl font-cinzel font-extrabold text-gold-400 my-2">?</div>
@@ -255,7 +248,6 @@
         </div>
       </div>
 
-      <!-- Modal Result Box -->
       <div class="bg-dndBg border border-gold-500/30 rounded-xl p-4 text-center mb-6 min-h-[80px] flex flex-col items-center justify-center">
         <div id="takeout-result-title" class="font-cinzel font-bold text-base sm:text-lg text-white">
           Ready to Roll Take-Out
@@ -265,7 +257,6 @@
         </div>
       </div>
 
-      <!-- Takeout Action Buttons -->
       <div class="flex flex-col gap-2.5">
         <button id="takeout-roll-btn" class="w-full py-3 bg-gradient-to-r from-gold-600 to-gold-500 text-black font-cinzel font-bold text-base rounded-xl shadow-lg hover:brightness-110 transition-all">
           🎲 Roll Take-Out Dice
@@ -287,7 +278,6 @@
   <!-- GRIMOIRE MENU DRAWER -->
   <div id="grimoire-drawer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300">
     <div id="grimoire-panel" class="fixed inset-y-0 right-0 max-w-xl w-full bg-dndCard border-l border-gold-600/30 p-4 sm:p-6 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300">
-      
       <div class="flex items-center justify-between pb-4 border-b border-dndBorder">
         <div class="flex items-center space-x-2">
           <span class="text-2xl">📜</span>
@@ -308,7 +298,6 @@
       <div id="grimoire-content" class="flex-grow overflow-y-auto custom-scrollbar my-4 pr-2 space-y-6">
         <!-- Populated dynamically -->
       </div>
-
     </div>
   </div>
 
@@ -337,11 +326,20 @@
       8: ["Fords Garage", "Panda Express", "Buz & Ned’s Real BBQ", "China House", "Little Caesar’s", "Backwoodz BBQ"]
     };
 
-    // --- ABLY REAL-TIME INITIALIZATION ---
+    // --- ABLY REAL-TIME INITIALIZATION (With Fail-Safe) ---
     const ABLY_API_KEY = 'GNP9bg.B6Oz2A:GfmivvrdM4i7dBf_B4r9UjvnyCoHYFimCUhtzoy-gU0';
     const myClientId = 'Adventurer-' + Math.floor(1000 + Math.random() * 9000);
-    const ably = new Ably.Realtime({ key: ABLY_API_KEY, clientId: myClientId });
-    const channel = ably.channels.get('roll-for-dinner-room');
+    let ably = null;
+    let channel = null;
+
+    if (window.Ably) {
+      try {
+        ably = new Ably.Realtime({ key: ABLY_API_KEY, clientId: myClientId });
+        channel = ably.channels.get('roll-for-dinner-room');
+      } catch (e) {
+        console.warn("Ably Realtime failed to load, falling back to local standalone mode.", e);
+      }
+    }
 
     function getRandomInt(min, max) {
       const range = max - min + 1;
@@ -359,12 +357,15 @@
         this.ctx = null;
       }
       init() {
-        if (!this.ctx) {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        try {
+          if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+          } else if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+          }
+        } catch(e){}
       }
       playDiceRoll() {
-        this.init();
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
         for (let i = 0; i < 5; i++) {
@@ -381,7 +382,6 @@
         }
       }
       playCrit() {
-        this.init();
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
@@ -397,7 +397,6 @@
         osc.stop(now + 0.4);
       }
       playObjection() {
-        this.init();
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
@@ -588,37 +587,37 @@
       });
     }
 
-    // --- REAL-TIME BROADCAST TRIGGER FUNCTIONS ---
+    // --- REAL-TIME BROADCAST TRIGGER FUNCTIONS WITH LOCAL FALLBACK ---
     function requestMainRoll(forceV = null, forceM = null, isObjection = false) {
       const v = forceV || getRandomInt(1, 6);
       const m = forceM || getRandomInt(1, 20);
 
-      channel.publish('main-roll-event', {
-        v: v,
-        m: m,
-        forceV: forceV,
-        forceM: forceM,
-        isObjection: isObjection,
-        sender: myClientId
-      });
+      if (channel) {
+        channel.publish('main-roll-event', { v, m, forceV, forceM, isObjection, sender: myClientId });
+      } else {
+        executeMainRoll(v, m, forceV, forceM, isObjection);
+      }
     }
 
     function requestTakeoutRoll(forceV = null, forceS = null, isObjection = false) {
       const v = forceV || getRandomInt(1, 8);
       const s = forceS || getRandomInt(1, 6);
 
-      channel.publish('takeout-roll-event', {
-        v: v,
-        s: s,
-        forceV: forceV,
-        forceS: forceS,
-        isObjection: isObjection,
-        sender: myClientId
-      });
+      if (channel) {
+        channel.publish('takeout-roll-event', { v, s, forceV, forceS, isObjection, sender: myClientId });
+      } else {
+        executeTakeoutRoll(v, s, forceV, forceS, isObjection);
+      }
     }
 
     function requestClearHistory() {
-      channel.publish('clear-history-event', { sender: myClientId });
+      if (channel) {
+        channel.publish('clear-history-event', { sender: myClientId });
+      } else {
+        historyLog = [];
+        saveHistory();
+        renderHistory();
+      }
     }
 
     // --- LOCAL EXECUTION OF REAL-TIME EVENTS ---
@@ -731,21 +730,23 @@
     }
 
     // --- ABLY CHANNEL SUBSCRIBERS ---
-    channel.subscribe('main-roll-event', (message) => {
-      const { v, m, forceV, forceM, isObjection } = message.data;
-      executeMainRoll(v, m, forceV, forceM, isObjection);
-    });
+    if (channel) {
+      channel.subscribe('main-roll-event', (message) => {
+        const { v, m, forceV, forceM, isObjection } = message.data;
+        executeMainRoll(v, m, forceV, forceM, isObjection);
+      });
 
-    channel.subscribe('takeout-roll-event', (message) => {
-      const { v, s, forceV, forceS, isObjection } = message.data;
-      executeTakeoutRoll(v, s, forceV, forceS, isObjection);
-    });
+      channel.subscribe('takeout-roll-event', (message) => {
+        const { v, s, forceV, forceS, isObjection } = message.data;
+        executeTakeoutRoll(v, s, forceV, forceS, isObjection);
+      });
 
-    channel.subscribe('clear-history-event', () => {
-      historyLog = [];
-      saveHistory();
-      renderHistory();
-    });
+      channel.subscribe('clear-history-event', () => {
+        historyLog = [];
+        saveHistory();
+        renderHistory();
+      });
+    }
 
     function openTakeoutModal() {
       const modal = getEl('takeout-modal');
@@ -827,15 +828,35 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadHistory();
 
-      getEl('main-roll-btn').addEventListener('click', () => requestMainRoll());
+      getEl('main-roll-btn').addEventListener('click', () => {
+        audio.init();
+        requestMainRoll();
+      });
 
-      getEl('object-v-btn').addEventListener('click', () => requestMainRoll(null, currentMainRoll.mealIndex, true));
-      getEl('object-m-btn').addEventListener('click', () => requestMainRoll(currentMainRoll.version, null, true));
+      getEl('object-v-btn').addEventListener('click', () => {
+        audio.init();
+        requestMainRoll(null, currentMainRoll.mealIndex, true);
+      });
 
-      getEl('takeout-roll-btn').addEventListener('click', () => requestTakeoutRoll());
+      getEl('object-m-btn').addEventListener('click', () => {
+        audio.init();
+        requestMainRoll(currentMainRoll.version, null, true);
+      });
 
-      getEl('takeout-obj-cat-btn').addEventListener('click', () => requestTakeoutRoll(null, currentTakeoutRoll.spotIndex, true));
-      getEl('takeout-obj-rest-btn').addEventListener('click', () => requestTakeoutRoll(currentTakeoutRoll.version, null, true));
+      getEl('takeout-roll-btn').addEventListener('click', () => {
+        audio.init();
+        requestTakeoutRoll();
+      });
+
+      getEl('takeout-obj-cat-btn').addEventListener('click', () => {
+        audio.init();
+        requestTakeoutRoll(null, currentTakeoutRoll.spotIndex, true);
+      });
+
+      getEl('takeout-obj-rest-btn').addEventListener('click', () => {
+        audio.init();
+        requestTakeoutRoll(currentTakeoutRoll.version, null, true);
+      });
 
       getEl('close-takeout-modal').addEventListener('click', closeTakeoutModal);
 
@@ -855,6 +876,7 @@
       });
 
       getEl('clear-history-btn').addEventListener('click', () => {
+        audio.init();
         requestClearHistory();
       });
 
@@ -862,7 +884,7 @@
     });
 
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && ably) {
         ably.connection.connect();
       }
     });
