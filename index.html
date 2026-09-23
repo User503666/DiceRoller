@@ -444,7 +444,7 @@
       renderHistory();
     }
 
-    function selectHistoryRoll(id) {
+    window.selectHistoryRoll = function(id) {
       const item = historyLog.find(e => e.id === id);
       if (!item) return;
 
@@ -484,9 +484,9 @@
         getEl('takeout-objection-bar').classList.remove('hidden');
         openTakeoutModal();
       }
-    }
+    };
 
-    function objectToHistoryRoll(id, target) {
+    window.objectToHistoryRoll = function(id, target) {
       selectHistoryRoll(id);
       const item = historyLog.find(e => e.id === id);
       if (!item) return;
@@ -498,7 +498,7 @@
         if (target === 'version') requestMainRoll(null, currentMainRoll.mealIndex, true);
         else if (target === 'meal') requestMainRoll(currentMainRoll.version, null, true);
       }
-    }
+    };
 
     function renderHistory() {
       const container = getEl('history-feed');
@@ -567,7 +567,7 @@
       });
     }
 
-    function animateDice(element, finalValue, duration = 600) {
+    function animateDice(element, finalValue, maxFace = 20, duration = 600) {
       element.classList.add('animate-dice-shake');
       const startTime = performance.now();
       audio.playDiceRoll();
@@ -576,7 +576,7 @@
         function update(currentTime) {
           const elapsed = currentTime - startTime;
           if (elapsed < duration) {
-            element.textContent = getRandomInt(1, 20);
+            element.textContent = getRandomInt(1, maxFace);
             requestAnimationFrame(update);
           } else {
             element.textContent = finalValue;
@@ -631,8 +631,8 @@
       }
 
       const promises = [];
-      if (!forceV || isObjection) promises.push(animateDice(d6El, v));
-      if (!forceM || isObjection) promises.push(animateDice(d20El, m));
+      if (!forceV || isObjection) promises.push(animateDice(d6El, v, 6));
+      if (!forceM || isObjection) promises.push(animateDice(d20El, m, 20));
 
       await Promise.all(promises);
 
@@ -688,8 +688,8 @@
       if (isObjection) audio.playObjection();
 
       const promises = [];
-      if (!forceV || isObjection) promises.push(animateDice(d8El, v));
-      if (!forceS || isObjection) promises.push(animateDice(d6El, s));
+      if (!forceV || isObjection) promises.push(animateDice(d8El, v, 8));
+      if (!forceS || isObjection) promises.push(animateDice(d6El, s, 6));
 
       await Promise.all(promises);
 
@@ -855,15 +855,12 @@
       });
 
       getEl('clear-history-btn').addEventListener('click', () => {
-        if (confirm("Are you sure you wish to erase the Scroll of Fate history across all devices?")) {
-          requestClearHistory();
-        }
+        requestClearHistory();
       });
 
       setupPWA();
     });
 
-    // Mobile background reconnect handling
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         ably.connection.connect();
@@ -890,39 +887,7 @@
       const manifestStr = JSON.stringify(manifestObj);
       const manifestBlob = new Blob([manifestStr], { type: 'application/json' });
       getEl('pwa-manifest').href = URL.createObjectURL(manifestBlob);
-
-      if ('serviceWorker' in navigator) {
-        const swCode = `
-          const CACHE_NAME = 'roll-for-dinner-v5';
-          self.addEventListener('install', e => {
-            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./', '${iconUrl}'])));
-          });
-          self.addEventListener('fetch', e => {
-            e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
-          });
-        `;
-        const swBlob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(swBlob);
-        navigator.serviceWorker.register(swUrl).catch(() => {});
-      }
-
-      let deferredPrompt;
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const btn = getEl('pwa-install-btn');
-        btn.classList.remove('hidden');
-        btn.addEventListener('click', () => {
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then(() => {
-            btn.classList.add('hidden');
-          });
-        });
-      });
     }
   </script>
-
-</body>
-</html>
 </body>
 </html>
