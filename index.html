@@ -478,20 +478,29 @@
       if (historyLog.length > 50) historyLog.pop();
       saveHistory();
       renderHistory();
+      return entry;
     }
 
-    function openFatePopup(id) {
-      const item = historyLog.find(e => e.id === id);
-      if (!item) return;
+    function replaceHistoryEntry(targetId, newEntry) {
+      const idx = historyLog.findIndex(e => e.id === targetId);
+      newEntry.id = targetId;
+      if (idx !== -1) {
+        historyLog[idx] = newEntry;
+      } else {
+        historyLog.unshift(newEntry);
+      }
+      saveHistory();
+      renderHistory();
+      return newEntry;
+    }
 
-      selectedHistoryEntry = item;
-
+    function updatePopupDisplay(item) {
       const titleEl = getEl('popup-result-title');
       const subEl = getEl('popup-result-sub');
       const obj1Btn = getEl('popup-obj-d6-btn');
       const obj2Btn = getEl('popup-obj-d20-btn');
 
-      if (item.type === 'TAKEOUT_ROLL') {
+      if (item.type === 'TAKEOUT_ROLL' || item.type === 'TAKEOUT_OBJECTION') {
         getEl('popup-icon').textContent = '🥡';
         getEl('popup-header-title').textContent = 'Take-Out Log';
         titleEl.textContent = item.restaurantName;
@@ -506,6 +515,14 @@
         obj1Btn.textContent = '⚔️ Object D6 (Ver)';
         obj2Btn.textContent = '⚔️ Object D20 (Slot)';
       }
+    }
+
+    function openFatePopup(id) {
+      const item = historyLog.find(e => e.id === id);
+      if (!item) return;
+
+      selectedHistoryEntry = item;
+      updatePopupDisplay(item);
 
       const modal = getEl('fate-popup-modal');
       modal.classList.remove('pointer-events-none', 'opacity-0');
@@ -525,7 +542,7 @@
 
       const item = selectedHistoryEntry;
 
-      if (item.type === 'TAKEOUT_ROLL') {
+      if (item.type === 'TAKEOUT_ROLL' || item.type === 'TAKEOUT_OBJECTION') {
         currentTakeoutRoll = {
           version: item.version,
           spotIndex: item.spotIndex,
@@ -592,13 +609,17 @@
           badge = `<span class="px-1.5 py-0.5 text-[0.65rem] font-bold font-cinzel rounded bg-gold-500/20 text-gold-400 border border-gold-500/30 shrink-0">Main Roll</span>`;
           title = `<span class="font-bold text-white text-xs sm:text-sm leading-tight truncate">${item.mealName}</span>`;
           details = `<span class="text-[0.7rem] text-gray-400">D6: <strong class="text-gold-400">V${item.version}</strong> | D20: <strong class="text-gold-400">#${item.mealIndex}</strong></span>`;
-        } else if (item.type === 'OBJECTION') {
+        } else if (item.type === 'MAIN_OBJECTION') {
           badge = `<span class="px-1.5 py-0.5 text-[0.65rem] font-bold font-cinzel rounded bg-red-900/30 text-red-400 border border-red-700/40 shrink-0">⚔️ Objection</span>`;
-          title = `<span class="font-bold text-red-200 text-xs sm:text-sm leading-tight truncate">${item.newResult}</span>`;
-          details = `<span class="text-[0.7rem] text-gray-400"><span class="line-through text-gray-500">${item.oldResult}</span> ➔ <strong class="text-gold-400">${item.newResult}</strong></span>`;
+          title = `<span class="font-bold text-red-200 text-xs sm:text-sm leading-tight truncate">${item.mealName}</span>`;
+          details = `<span class="text-[0.7rem] text-gray-400">D6: <strong class="text-gold-400">V${item.version}</strong> | D20: <strong class="text-gold-400">#${item.mealIndex}</strong></span>`;
         } else if (item.type === 'TAKEOUT_ROLL') {
           badge = `<span class="px-1.5 py-0.5 text-[0.65rem] font-bold font-cinzel rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">🥡 Take-Out</span>`;
           title = `<span class="font-bold text-amber-200 text-xs sm:text-sm leading-tight truncate">${item.restaurantName}</span>`;
+          details = `<span class="text-[0.7rem] text-gray-400">D8: <strong class="text-amber-400">Cat ${item.version}</strong> | D6: <strong class="text-amber-400">#${item.spotIndex}</strong></span>`;
+        } else if (item.type === 'TAKEOUT_OBJECTION') {
+          badge = `<span class="px-1.5 py-0.5 text-[0.65rem] font-bold font-cinzel rounded bg-red-900/30 text-red-400 border border-red-700/40 shrink-0">⚔️ Objection</span>`;
+          title = `<span class="font-bold text-red-200 text-xs sm:text-sm leading-tight truncate">${item.restaurantName}</span>`;
           details = `<span class="text-[0.7rem] text-gray-400">D8: <strong class="text-amber-400">Cat ${item.version}</strong> | D6: <strong class="text-amber-400">#${item.spotIndex}</strong></span>`;
         }
 
@@ -640,7 +661,7 @@
       });
     }
 
-    async function executeMainRoll(forceV = null, forceM = null, isObjection = false) {
+    async function executeMainRoll(forceV = null, forceM = null, isObjection = false, targetHistoryId = null) {
       const v = forceV || getRandomInt(1, 6);
       const m = forceM || getRandomInt(1, 20);
 
@@ -657,7 +678,6 @@
 
       await Promise.all(promises);
 
-      const oldMeal = currentMainRoll.mealName;
       currentMainRoll = {
         version: v,
         mealIndex: m,
@@ -682,27 +702,26 @@
 
       getEl('main-objection-bar').classList.remove('hidden');
 
-      if (isObjection) {
-        addHistoryEntry({
-          type: 'OBJECTION',
-          targetName: 'Main Meal Objection',
-          oldResult: oldMeal || 'Initial Roll',
-          newResult: currentMainRoll.mealName,
-          version: v,
-          mealIndex: m,
-          mealName: currentMainRoll.mealName
-        });
+      const newEntryData = {
+        type: isObjection ? 'MAIN_OBJECTION' : 'MAIN_ROLL',
+        version: v,
+        mealIndex: m,
+        mealName: currentMainRoll.mealName
+      };
+
+      if (targetHistoryId) {
+        const updated = replaceHistoryEntry(targetHistoryId, newEntryData);
+        selectedHistoryEntry = updated;
+        updatePopupDisplay(updated);
+      } else if (isObjection && historyLog.length > 0) {
+        const updated = replaceHistoryEntry(historyLog[0].id, newEntryData);
+        selectedHistoryEntry = updated;
       } else {
-        addHistoryEntry({
-          type: 'MAIN_ROLL',
-          version: v,
-          mealIndex: m,
-          mealName: currentMainRoll.mealName
-        });
+        addHistoryEntry(newEntryData);
       }
     }
 
-    async function executeTakeoutRoll(forceV = null, forceS = null, isObjection = false) {
+    async function executeTakeoutRoll(forceV = null, forceS = null, isObjection = false, targetHistoryId = null) {
       const v = forceV || getRandomInt(1, 8);
       const s = forceS || getRandomInt(1, 6);
 
@@ -718,7 +737,6 @@
       await Promise.all(promises);
 
       const spotName = TAKEOUT_SPOTS[v][s - 1];
-      const oldSpot = currentTakeoutRoll.restaurantName;
 
       currentTakeoutRoll = {
         version: v,
@@ -734,23 +752,22 @@
 
       getEl('takeout-objection-bar').classList.remove('hidden');
 
-      if (isObjection) {
-        addHistoryEntry({
-          type: 'OBJECTION',
-          targetName: 'Take-Out Objection',
-          oldResult: oldSpot || 'Initial Roll',
-          newResult: spotName,
-          version: v,
-          spotIndex: s,
-          restaurantName: spotName
-        });
+      const newEntryData = {
+        type: isObjection ? 'TAKEOUT_OBJECTION' : 'TAKEOUT_ROLL',
+        version: v,
+        spotIndex: s,
+        restaurantName: spotName
+      };
+
+      if (targetHistoryId) {
+        const updated = replaceHistoryEntry(targetHistoryId, newEntryData);
+        selectedHistoryEntry = updated;
+        updatePopupDisplay(updated);
+      } else if (isObjection && historyLog.length > 0) {
+        const updated = replaceHistoryEntry(historyLog[0].id, newEntryData);
+        selectedHistoryEntry = updated;
       } else {
-        addHistoryEntry({
-          type: 'TAKEOUT_ROLL',
-          version: v,
-          spotIndex: s,
-          restaurantName: spotName
-        });
+        addHistoryEntry(newEntryData);
       }
     }
 
@@ -868,20 +885,26 @@
       getEl('popup-apply-home-btn').addEventListener('click', applySelectedFate);
 
       getEl('popup-obj-d6-btn').addEventListener('click', () => {
-        applySelectedFate();
-        if (selectedHistoryEntry && selectedHistoryEntry.type === 'TAKEOUT_ROLL') {
-          executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true);
+        if (!selectedHistoryEntry) return;
+        const targetId = selectedHistoryEntry.id;
+        const isTakeout = selectedHistoryEntry.type === 'TAKEOUT_ROLL' || selectedHistoryEntry.type === 'TAKEOUT_OBJECTION';
+
+        if (isTakeout) {
+          executeTakeoutRoll(null, selectedHistoryEntry.spotIndex, true, targetId);
         } else {
-          executeMainRoll(null, currentMainRoll.mealIndex, true);
+          executeMainRoll(null, selectedHistoryEntry.mealIndex, true, targetId);
         }
       });
 
       getEl('popup-obj-d20-btn').addEventListener('click', () => {
-        applySelectedFate();
-        if (selectedHistoryEntry && selectedHistoryEntry.type === 'TAKEOUT_ROLL') {
-          executeTakeoutRoll(currentTakeoutRoll.version, null, true);
+        if (!selectedHistoryEntry) return;
+        const targetId = selectedHistoryEntry.id;
+        const isTakeout = selectedHistoryEntry.type === 'TAKEOUT_ROLL' || selectedHistoryEntry.type === 'TAKEOUT_OBJECTION';
+
+        if (isTakeout) {
+          executeTakeoutRoll(selectedHistoryEntry.version, null, true, targetId);
         } else {
-          executeMainRoll(currentMainRoll.version, null, true);
+          executeMainRoll(selectedHistoryEntry.version, null, true, targetId);
         }
       });
 
@@ -934,7 +957,7 @@
 
       if ('serviceWorker' in navigator) {
         const swCode = `
-          const CACHE_NAME = 'roll-for-dinner-v7';
+          const CACHE_NAME = 'roll-for-dinner-v8';
           self.addEventListener('install', e => {
             e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./', '${iconUrl}'])));
           });
