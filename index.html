@@ -2,1052 +2,286 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Roll for Dinner - D&D Meal Decider</title>
-  <meta name="description" content="A tabletop RPG-themed interactive web app to decide what to eat!">
-  <meta name="theme-color" content="#121216">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <!-- Home Screen & Favicon Icons -->
-  <link rel="apple-touch-icon" sizes="512x512" href="dice-twenty-faces-twenty.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="dice-twenty-faces-twenty.png">
-
-  <!-- Manifest (Inlined Data URI Manifest for PWA) -->
-  <link rel="manifest" id="pwa-manifest">
-
-  <!-- Fonts & Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            cinzel: ['Cinzel', 'serif'],
-            sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            gold: {
-              300: '#fde047',
-              400: '#facc15',
-              500: '#eab308',
-              600: '#ca8a04',
-              700: '#a16207',
-            },
-            parchment: '#fef3c7',
-            dndBg: '#121216',
-            dndCard: '#1a1b23',
-            dndBorder: '#373a4b',
-            dndRed: '#991b1b',
-            dndRedHover: '#7f1d1d'
-          },
-          animation: {
-            'dice-shake': 'shake 0.5s ease-in-out infinite',
-            'glow-pulse': 'glow 2s ease-in-out infinite',
-            'crit-flash': 'crit 0.8s ease-out',
-          },
-          keyframes: {
-            shake: {
-              '0%, 100%': { transform: 'rotate(0deg) scale(1)' },
-              '20%': { transform: 'rotate(-12deg) scale(1.1)' },
-              '40%': { transform: 'rotate(10deg) scale(1.1)' },
-              '60%': { transform: 'rotate(-8deg) scale(1.05)' },
-              '80%': { transform: 'rotate(6deg) scale(1.05)' },
-            },
-            glow: {
-              '0%, 100%': { filter: 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.4))' },
-              '50%': { filter: 'drop-shadow(0 0 25px rgba(234, 179, 8, 0.9))' },
-            },
-            crit: {
-              '0%': { transform: 'scale(0.8)', opacity: '0' },
-              '50%': { transform: 'scale(1.25)', opacity: '1' },
-              '100%': { transform: 'scale(1)', opacity: '1' },
-            }
-          }
-        }
-      }
-    }
-  </script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roll for Dinner - Fate Log</title>
   <style>
+    :root {
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --card-hover: #f0f4f8;
+      --text-main: #2c3e50;
+      --text-muted: #7f8c8d;
+      --accent: #e74c3c;
+      --border-radius: 12px;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
     body {
-      background-color: #121216;
-      color: #e2e8f0;
-      background-image: radial-gradient(circle at 50% 20%, #202231 0%, #121216 80%);
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 5px;
+
+    .container {
+      width: 100%;
+      max-width: 480px;
     }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #1a1b23;
+
+    h2 {
+      margin-bottom: 16px;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      color: var(--text-main);
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #373a4b;
-      border-radius: 4px;
+
+    /* Fate Log List */
+    .fate-log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #ca8a04;
+
+    /* Full Card Click Target */
+    .fate-log-item {
+      display: flex;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 14px 16px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      /* Prevents clipping/overflow on tight mobile viewports */
+      overflow: hidden; 
     }
-    .gold-gradient-text {
-      background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #854d0e 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+
+    .fate-log-item:hover {
+      background-color: var(--card-hover);
+    }
+
+    .fate-log-item:active {
+      transform: scale(0.98);
+    }
+
+    .fate-log-item:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .dice-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #edf2f7;
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin-right: 12px;
+      flex-shrink: 0; /* Ensures dice badge never compresses */
+    }
+
+    .meal-name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-main);
+      flex-grow: 1;
+      /* Graceful text truncation for long meal titles on phone screens */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tap-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Modal / Objection Popup */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      transform: translateY(20px);
+      transition: transform 0.25s ease;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .modal-roll {
+      color: var(--accent);
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .modal-description {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background-color: #edf2f7;
+      color: var(--text-main);
+    }
+
+    .btn-danger {
+      background-color: var(--accent);
+      color: #ffffff;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-gold-500 selection:text-black">
+<body>
 
-  <header class="w-full border-b border-dndBorder/60 bg-dndCard/80 backdrop-blur-md sticky top-0 z-30">
-    <div class="max-w-4xl mx-auto px-3 py-2 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <div class="w-8 h-8 rounded-lg overflow-hidden shadow-lg shadow-gold-500/10 flex items-center justify-center bg-dndCard border border-gold-600/40 shrink-0">
-          <img src="dice-twenty-faces-twenty.png" alt="Roll For Dinner Logo" class="w-full h-full object-cover">
-        </div>
-        <div>
-          <h1 class="font-cinzel font-bold text-base md:text-lg text-gold-400 leading-none">Roll For Dinner</h1>
-          <p class="text-[0.7rem] text-gray-400 font-medium">D&D Meal Decider</p>
-        </div>
-      </div>
-
-      <div class="flex items-center space-x-1.5">
-        <button id="pwa-install-btn" class="hidden px-2.5 py-1 text-xs font-semibold rounded-lg bg-gold-500 text-black hover:bg-gold-400 transition-colors flex items-center space-x-1 shadow-md">
-          <span>📲</span> <span>Install</span>
-        </button>
-        <button id="open-history-btn" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-dndBorder/60 hover:bg-dndBorder border border-gold-600/30 text-gold-300 transition-all flex items-center space-x-1.5">
-          <span>📜</span> 
-          <span>Roll Log</span>
-          <span id="log-counter-badge" class="ml-0.5 px-1.5 py-0.2 rounded-full text-[0.65rem] font-bold bg-gold-500 text-black shadow-sm">0</span>
-        </button>
-        <button id="open-grimoire-btn" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-dndBorder/60 hover:bg-dndBorder border border-gold-600/30 text-gold-300 transition-all flex items-center space-x-1">
-          <span>📖</span> <span>Menu</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main class="flex-grow max-w-2xl w-full mx-auto px-3 py-4 md:py-8 flex flex-col items-center justify-center">
-    
-    <!-- Hero Banner -->
-    <div class="text-center mb-4 md:mb-6 max-w-lg">
-      <h2 class="font-cinzel text-xl sm:text-2xl md:text-3xl font-bold gold-gradient-text mb-1">What Shall We Feast Upon?</h2>
-      <p class="text-xs text-gray-400 leading-snug">Roll the D6 (Version) & D20 (Meal) to dictate your dinner. Objection options are available if the party disagrees!</p>
-    </div>
-
-    <!-- MAIN ROLLER CARD -->
-    <div class="w-full bg-dndCard/90 border border-gold-600/40 rounded-xl p-4 sm:p-6 shadow-2xl backdrop-blur-sm relative overflow-hidden">
-      
-      <div class="absolute -top-12 -right-12 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl pointer-events-none"></div>
-
-      <!-- Dice Displays Section -->
-      <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        
-        <!-- D6 Version Box -->
-        <div class="bg-dndBg/80 border border-dndBorder rounded-lg p-2.5 sm:p-4 flex flex-col items-center justify-center relative shadow-inner">
-          <span class="text-[0.65rem] sm:text-xs uppercase font-cinzel text-gold-500 tracking-wider font-bold">D6 • Version</span>
-          <div id="d6-display" class="text-3xl sm:text-5xl font-cinzel font-extrabold text-gold-400 my-1 transition-all duration-300 flex items-center justify-center min-h-[44px] sm:min-h-[56px]">
-            <span class="text-gray-600 text-2xl sm:text-3xl">?</span>
-          </div>
-          <span id="d6-subtext" class="text-[0.65rem] sm:text-xs text-gray-400 font-medium text-center">Version 1 - 6</span>
-        </div>
-
-        <!-- D20 Meal Box -->
-        <div class="bg-dndBg/80 border border-dndBorder rounded-lg p-2.5 sm:p-4 flex flex-col items-center justify-center relative shadow-inner">
-          <span class="text-[0.65rem] sm:text-xs uppercase font-cinzel text-gold-500 tracking-wider font-bold">D20 • Meal Slot</span>
-          <div id="d20-display" class="text-3xl sm:text-5xl font-cinzel font-extrabold text-gold-400 my-1 transition-all duration-300 flex items-center justify-center min-h-[44px] sm:min-h-[56px]">
-            <span class="text-gray-600 text-2xl sm:text-3xl">?</span>
-          </div>
-          <span id="d20-subtext" class="text-[0.65rem] sm:text-xs text-gray-400 font-medium text-center">Meal 1 - 20</span>
-        </div>
-
-      </div>
-
-      <!-- Result Banner -->
-      <div id="result-container" class="min-h-[75px] sm:min-h-[95px] bg-dndBg/90 border border-gold-500/30 rounded-lg p-3 flex flex-col items-center justify-center text-center transition-all mb-4 sm:mb-6 shadow-md">
-        <span class="text-[0.65rem] font-cinzel uppercase tracking-widest text-gray-400 mb-0.5">Destined Outcome</span>
-        <div id="result-title" class="font-cinzel text-base sm:text-xl font-bold text-white leading-tight">
-          Ready to Roll for Initiative!
-        </div>
-        <div id="result-description" class="text-xs text-gold-400 font-medium mt-1">
-          Click the button below to cast the fate dice.
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex flex-col gap-2">
-        <button id="main-roll-btn" class="w-full py-3 sm:py-3.5 rounded-lg bg-gradient-to-r from-gold-600 via-gold-500 to-gold-600 text-black font-cinzel font-black text-sm sm:text-base shadow-lg hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center space-x-2">
-          <span>🎲</span>
-          <span>ROLL FOR DINNER</span>
-        </button>
-
-        <div id="main-objection-bar" class="hidden grid grid-cols-2 gap-2 pt-2 border-t border-dndBorder/60">
-          <button id="object-v-btn" class="py-2 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel font-bold text-xs rounded-lg transition-all flex items-center justify-center text-center">
-            ⚔️ Object D6
-          </button>
-          <button id="object-m-btn" class="py-2 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel font-bold text-xs rounded-lg transition-all flex items-center justify-center text-center">
-            ⚔️ Object D20
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-  </main>
-
-  <!-- FATE LOG DRAWER (PREVIOUS ROLLS SUBMENU) -->
-  <div id="history-drawer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300">
-    <div id="history-panel" class="fixed inset-y-0 right-0 max-w-md w-full bg-dndCard border-l border-gold-600/30 p-4 sm:p-5 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300">
-      
-      <div class="flex items-center justify-between pb-3 border-b border-dndBorder">
-        <div class="flex items-center space-x-2">
-          <span class="text-xl">📜</span>
-          <h3 class="font-cinzel text-base sm:text-lg font-bold text-gold-400">Scroll of Fate</h3>
-        </div>
-        <div class="flex items-center space-x-2">
-          <button id="clear-history-btn" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/40 transition-all flex items-center space-x-1">
-            <span>🗑️</span> <span>Clear</span>
-          </button>
-          <button id="close-history-btn" class="text-gray-400 hover:text-white text-xl font-bold p-1">✕</button>
-        </div>
-      </div>
-
-      <div id="history-feed" class="flex-grow overflow-y-auto custom-scrollbar my-3 pr-1 space-y-2.5">
-        <div id="history-empty" class="text-center py-10 text-gray-500 text-xs italic">
-          No fate recorded yet. Cast the dice to write history!
-        </div>
-      </div>
-
-    </div>
+  <div class="container">
+    <h2>Fate Log</h2>
+    <div class="fate-log-list" id="fateLog"></div>
   </div>
 
-  <!-- FATE DETAIL / RE-ROLL POPUP MODAL -->
-  <div id="fate-popup-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 opacity-0 pointer-events-none transition-opacity duration-300">
-    <div class="bg-dndCard border border-gold-500/50 rounded-xl max-w-md w-full p-4 sm:p-5 shadow-2xl relative transform scale-95 transition-transform duration-300">
-      
-      <button id="close-fate-popup-btn" class="absolute top-3 right-3 text-gray-400 hover:text-white text-lg font-bold p-1">
-        ✕
-      </button>
-
-      <div class="text-center mb-3">
-        <span class="text-2xl" id="popup-icon">🎯</span>
-        <h3 class="font-cinzel text-lg sm:text-xl font-bold text-gold-400 mt-0.5" id="popup-header-title">Fate Selected</h3>
-        <p class="text-[0.7rem] text-gray-400" id="popup-header-sub">Review or object to this historical roll</p>
+  <!-- Objection / Inspect Popup -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card">
+      <div class="modal-roll" id="modalRoll">🎲 Roll: -</div>
+      <h3 class="modal-title" id="modalTitle">Meal Name</h3>
+      <p class="modal-description" id="modalDesc">
+        Would you like to object to this outcome or view details?
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="closeBtn">Close</button>
+        <button class="btn btn-danger" id="objectBtn">Object!</button>
       </div>
-
-      <!-- Popup Result Display Box -->
-      <div class="bg-dndBg border border-gold-500/30 rounded-lg p-3 text-center mb-4 min-h-[70px] flex flex-col items-center justify-center overflow-hidden">
-        <div id="popup-result-title" class="font-cinzel font-bold text-base sm:text-lg text-white leading-tight transition-transform">
-          --
-        </div>
-        <div id="popup-result-sub" class="text-xs text-gold-400 mt-1">
-          --
-        </div>
-      </div>
-
-      <!-- Objection Action Buttons inside Popup -->
-      <div class="flex flex-col gap-2">
-        <button id="popup-apply-home-btn" class="w-full py-2.5 bg-gradient-to-r from-gold-600 to-gold-500 text-black font-cinzel font-bold text-xs sm:text-sm rounded-lg shadow-lg hover:brightness-110 transition-all">
-          ✨ Set As Active Choice
-        </button>
-
-        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-dndBorder">
-          <button id="popup-obj-d6-btn" class="py-2 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel text-xs font-bold rounded-lg text-center">
-            ⚔️ Object D6/D8
-          </button>
-          <button id="popup-obj-d20-btn" class="py-2 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel text-xs font-bold rounded-lg text-center">
-            ⚔️ Object D20/D6
-          </button>
-        </div>
-      </div>
-
     </div>
   </div>
-
-  <!-- TAKE-OUT SUB-ROLLER MODAL -->
-  <div id="takeout-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 opacity-0 pointer-events-none transition-opacity duration-300">
-    <div class="bg-dndCard border border-gold-500/50 rounded-xl max-w-md w-full p-3 sm:p-5 shadow-2xl relative transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
-      
-      <button id="close-takeout-modal" class="absolute top-3 right-3 text-gray-400 hover:text-white text-lg font-bold p-1">
-        ✕
-      </button>
-
-      <div class="text-center mb-3">
-        <span class="text-2xl">🥡</span>
-        <h3 class="font-cinzel text-lg sm:text-xl font-bold text-gold-400 mt-0.5">Take-Out Contingency</h3>
-        <p class="text-[0.7rem] text-gray-400">Roll D8 (Category) & D6 (Restaurant) for takeaway!</p>
-      </div>
-
-      <!-- Modal Dice Section -->
-      <div class="grid grid-cols-2 gap-2 mb-3">
-        <div class="bg-dndBg border border-dndBorder rounded-lg p-2 text-center">
-          <span class="text-[0.65rem] font-cinzel text-gold-500 font-bold uppercase">D8 • Category</span>
-          <div id="d8-display" class="text-2xl font-cinzel font-extrabold text-gold-400 my-0.5">?</div>
-          <span id="d8-subtext" class="text-[0.65rem] text-gray-400">Category 1 - 8</span>
-        </div>
-
-        <div class="bg-dndBg border border-dndBorder rounded-lg p-2 text-center">
-          <span class="text-[0.65rem] font-cinzel text-gold-500 font-bold uppercase">D6 • Restaurant</span>
-          <div id="modal-d6-display" class="text-2xl font-cinzel font-extrabold text-gold-400 my-0.5">?</div>
-          <span id="modal-d6-subtext" class="text-[0.65rem] text-gray-400">Option 1 - 6</span>
-        </div>
-      </div>
-
-      <!-- Modal Result Box -->
-      <div class="bg-dndBg border border-gold-500/30 rounded-lg p-2.5 text-center mb-3 min-h-[60px] flex flex-col items-center justify-center">
-        <div id="takeout-result-title" class="font-cinzel font-bold text-sm sm:text-base text-white leading-tight">
-          Ready to Roll Take-Out
-        </div>
-        <div id="takeout-result-sub" class="text-xs text-gold-400 mt-0.5">
-          Click below to choose your venue.
-        </div>
-      </div>
-
-      <!-- Takeout Action Buttons -->
-      <div class="flex flex-col gap-2">
-        <button id="takeout-roll-btn" class="w-full py-2.5 bg-gradient-to-r from-gold-600 to-gold-500 text-black font-cinzel font-bold text-sm rounded-lg shadow-lg hover:brightness-110 transition-all">
-          🎲 Roll Take-Out Dice
-        </button>
-
-        <div id="takeout-objection-bar" class="hidden grid grid-cols-2 gap-1.5 pt-1.5 border-t border-dndBorder">
-          <button id="takeout-obj-cat-btn" class="py-1.5 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel text-xs font-bold rounded-lg text-center">
-            ⚔️ Object D8
-          </button>
-          <button id="takeout-obj-rest-btn" class="py-1.5 px-1 bg-dndRed/20 border border-dndRed/50 hover:bg-dndRed/40 text-red-300 font-cinzel text-xs font-bold rounded-lg text-center">
-            ⚔️ Object D6
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- GRIMOIRE MENU DRAWER -->
-  <div id="grimoire-drawer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300">
-    <div id="grimoire-panel" class="fixed inset-y-0 right-0 max-w-md w-full bg-dndCard border-l border-gold-600/30 p-3 sm:p-5 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300">
-      
-      <div class="flex items-center justify-between pb-3 border-b border-dndBorder">
-        <div class="flex items-center space-x-2">
-          <span class="text-xl">📖</span>
-          <h3 class="font-cinzel text-base sm:text-lg font-bold text-gold-400">The Grand Grimoire</h3>
-        </div>
-        <button id="close-grimoire-btn" class="text-gray-400 hover:text-white text-xl font-bold p-1">✕</button>
-      </div>
-
-      <div class="flex space-x-2 mt-3 border-b border-dndBorder pb-2">
-        <button id="tab-home-meals" class="px-3 py-1.5 text-xs font-cinzel font-bold rounded-lg bg-gold-500 text-black">
-          Home Meals
-        </button>
-        <button id="tab-takeout-spots" class="px-3 py-1.5 text-xs font-cinzel font-bold rounded-lg bg-dndBorder/50 text-gray-300 hover:text-white">
-          Take-Out Spots
-        </button>
-      </div>
-
-      <div id="grimoire-content" class="flex-grow overflow-y-auto custom-scrollbar my-3 pr-1 space-y-4">
-        <!-- Populated dynamically -->
-      </div>
-
-    </div>
-  </div>
-
-  <footer class="border-t border-dndBorder/50 py-2.5 text-center text-[0.7rem] text-gray-500 mt-auto">
-    <p>Roll for Dinner • D&D Polyhedral Meal Companion</p>
-  </footer>
 
   <script>
-    const HOME_MEALS = {
-      1: ["Popcorn Skrimp/Chiken", "Costco Dinner", "Steak Fajitas", "Buffalo Chicken Sandwiches", "Freezer Night", "Chicken Alfredo Pasta Bake", "Cheeseburgers", "Beef Tacos", "Pizza Hotdogs", "Pizza", "Sweet and Sour Chicken", "Quesadillas", "Chili Cheese Dog Bake", "BBQ Pork Ribs", "Philly Cheesesteak", "Lemon Pepper Chicken", "Korean Bulgogi Beef", "Chicken and Dumplings", "Cajun Chicken Sloppy Joe", "Roll For Take-Out"],
-      2: ["Italian Subs", "Shredded Beef Tacos", "Baked Mostaccioli", "Garnett Inspired Sandwiches", "Chicken and Waffles", "Ham and Potato Casserole", "Chicken Carbonara", "Cheeseburger Pasta Skillet", "Freezer Night", "Arroz Con Pollo", "Jambalaya", "Chicken Parmesan", "Lasagna Soup", "BBQ Pulled Pork Wrap", "Chicken Bacon Ranch Wrap", "Pork Shake and Bake", "Tacos of Choice", "Roll For Take-Out", "Quesadillas", "Goulash"],
-      3: ["Steak and Eggs", "Chicken Tater Tot Casserole", "Mac and Cheese with Bacon", "Italian Sausage and Potatoes Skillet", "Taco Casserole", "Chicken Fajitas", "Steak", "Freezer Night", "Steak and Cheese Sub", "Cheeseburgers", "Meatball Subs", "Ramen", "Smothered Hamburger Steaks", "Soup/Bread Bowl", "Chicken Burrito Bowl", "Pulled Pork Sandwiches", "Lamb Gyros", "Chicken and Bacon Ranch Pasta", "Roll For Take-Out", "Chili Dogs"],
-      4: ["Pork Carnitas Tacos", "Cajun Dirty Rice", "FFYS (Fend For Yourself)", "Hamburger Helper", "Roast Chicken", "Chicken Parmesan", "Spaghetti with Meatballs", "Homestyle Boneless Wings", "Shrimp Skewer", "Chicken Fried Rice", "Baked BBQ Chicken", "Freezer Night", "Chicken Cordon Bleu", "Beef Empanadas", "Soup/Bread Bowl", "Stuffed Shells with Beef", "Chicken Caesar Wrap", "Ravioli", "Italian Sub Sandwich", "Roll For Take-Out"],
-      5: ["Teriyaki Chicken Stir-Fry", "Oven-Baked Meatballs", "Chicken Wings", "Beef Burritos", "Shrimp Skewers", "Sausage and Peppers Pasta", "Steak with Mashed Potatoes", "Soup/Bread Bowl", "Lasagna", "Chicken Enchiladas", "Chicken Caesar Wrap", "Pulled Pork Sliders", "Roll For Take-Out", "Chicken with Garlic Honey", "Dutch Oven Pot Roast", "Cajun Chicken Pasta", "Chicken Alfredo Bake", "Classic BLT", "French Dip Sandwich", "Chicken Drumsticks"],
-      6: ["Grilled Chicken Sandwich", "Homemade Chicken Minis", "Beef Nachos Supreme", "Chicken Bacon Pasta Bake", "Soup/Bread Bowl", "Hamburger Steak with Onion Gravy", "Tater Tot Casserole with Ground Beef", "Chicken Drumsticks with BBQ Sauce", "Chicken & Broccoli Alfredo", "Meatballs and Marinara", "Roll For Take-Out", "Beef Chili with Beans", "Maple Glazed Ham Steaks", "Chicken and Rice Casserole", "Freezer Night", "Classic Roast Beef", "Italian Sausage Hoagies", "Steak with Garlic Butter", "Hot Ham & Cheese Sliders", "Buffalo Chicken Mac and Cheese"]
-    };
+    // Sample Log Data
+    const fateLogData = [
+      { id: 1, roll: 12, name: "Slow-Cooked Beef Birria Tacos with Consomé dipping sauce", desc: "A rich, flavorful Mexican dish featuring tender shredded beef served in pan-fried tortillas." },
+      { id: 2, roll: 5, name: "Homemade Margherita Pizza", desc: "Classic pizza topped with fresh mozzarella, basil leaves, and tomato sauce." },
+      { id: 3, roll: 18, name: "Creamy Garlic Parmesan Fettuccine Alfredo with Grilled Chicken", desc: "Rich pasta tossed in a velvety butter and parmesan sauce." }
+    ];
 
-    const TAKEOUT_SPOTS = {
-      1: ["Texas Roadhouse", "Chilis", "Pho Thien Phat", "Takara", "O’Charley’s", "Casa Grande"],
-      2: ["Red Robin", "Outback", "IHOP", "Dennys", "Firehouse Subs", "Subway"],
-      3: ["Cheesecake Factory", "Waffle House", "Cracker Barrel", "Golden Corral", "Tappenyaki", "Chick-Fil-A"],
-      4: ["Zaxbys", "Popeyes", "Anna’s", "Olive Garden", "B-Dubs", "WingStop"],
-      5: ["Qdoba", "AppleBees", "Romas", "NN Burger", "Ramen Time", "Riverbound Cafe"],
-      6: ["Mission BBQ", "Tacos Mexico", "Fat Boys", "Jollibee", "Captain D’s", "Mr.Sub"],
-      7: ["Sakura", "Mod Pizza", "Noddles & Co", "Live Crawfish & Seafood", "Boil Bay", "HogsHead Cafe"],
-      8: ["Fords Garage", "Panda Express", "Buz & Ned’s Real BBQ", "China House", "Little Caesar’s", "Backwoodz BBQ"]
-    };
+    const fateLogContainer = document.getElementById("fateLog");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalRoll = document.getElementById("modalRoll");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalDesc = document.getElementById("modalDesc");
+    const closeBtn = document.getElementById("closeBtn");
+    const objectBtn = document.getElementById("objectBtn");
 
-    // Flatten all meal names for slot machine ticker
-    const ALL_MEALS_LIST = Object.values(HOME_MEALS).flat();
-    const ALL_TAKEOUT_LIST = Object.values(TAKEOUT_SPOTS).flat();
+    // Render Log Items
+    function renderLog() {
+      fateLogContainer.innerHTML = "";
+      fateLogData.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "fate-log-item";
+        row.setAttribute("role", "button");
+        row.setAttribute("tabindex", "0");
 
-    function getRandomInt(min, max) {
-      const range = max - min + 1;
-      const array = new Uint32Array(1);
-      window.crypto.getRandomValues(array);
-      return min + (array[0] % range);
-    }
-
-    let currentMainRoll = { version: null, mealIndex: null, mealName: null };
-    let currentTakeoutRoll = { version: null, spotIndex: null, restaurantName: null };
-    let selectedHistoryEntry = null;
-    let historyLog = [];
-
-    class AudioEffects {
-      constructor() {
-        this.ctx = null;
-      }
-      init() {
-        if (!this.ctx) {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-      }
-      playDiceRoll() {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        for (let i = 0; i < 5; i++) {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(150 + Math.random() * 300, now + i * 0.08);
-          gain.gain.setValueAtTime(0.15, now + i * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.07);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now + i * 0.08);
-          osc.stop(now + i * 0.08 + 0.07);
-        }
-      }
-      playCrit() {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.4);
-      }
-      playObjection() {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, now);
-        osc.frequency.setValueAtTime(110, now + 0.1);
-        gain.gain.setValueAtTime(0.25, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.35);
-      }
-    }
-    const audio = new AudioEffects();
-
-    function getEl(id) { return document.getElementById(id); }
-
-    function updateCounterBadge() {
-      const badge = getEl('log-counter-badge');
-      if (badge) {
-        badge.textContent = historyLog.length;
-      }
-    }
-
-    function loadHistory() {
-      try {
-        const stored = localStorage.getItem('roll_for_dinner_history');
-        if (stored) {
-          historyLog = JSON.parse(stored);
-        }
-      } catch (e) {
-        historyLog = [];
-      }
-      renderHistory();
-      updateCounterBadge();
-    }
-
-    function saveHistory() {
-      try {
-        localStorage.setItem('roll_for_dinner_history', JSON.stringify(historyLog));
-      } catch (e) {}
-      updateCounterBadge();
-    }
-
-    function addHistoryEntry(entry) {
-      entry.id = Date.now() + Math.random().toString(36).substr(2, 4);
-      historyLog.unshift(entry);
-      if (historyLog.length > 50) historyLog.pop();
-      saveHistory();
-      renderHistory();
-      return entry;
-    }
-
-    function replaceHistoryEntry(targetId, newEntry) {
-      const idx = historyLog.findIndex(e => e.id === targetId);
-      newEntry.id = targetId;
-      if (idx !== -1) {
-        historyLog[idx] = newEntry;
-      } else {
-        historyLog.unshift(newEntry);
-      }
-      saveHistory();
-      renderHistory();
-      return newEntry;
-    }
-
-    function updatePopupDisplay(item) {
-      const titleEl = getEl('popup-result-title');
-      const subEl = getEl('popup-result-sub');
-      const obj1Btn = getEl('popup-obj-d6-btn');
-      const obj2Btn = getEl('popup-obj-d20-btn');
-
-      if (item.type === 'TAKEOUT_ROLL' || item.type === 'TAKEOUT_OBJECTION') {
-        getEl('popup-icon').textContent = '🥡';
-        getEl('popup-header-title').textContent = 'Take-Out Log';
-        titleEl.textContent = item.restaurantName;
-        subEl.textContent = `Category ${item.version}, Spot #${item.spotIndex}`;
-        obj1Btn.textContent = '⚔️ Object D8 (Cat)';
-        obj2Btn.textContent = '⚔️ Object D6 (Spot)';
-      } else {
-        getEl('popup-icon').textContent = '🎲';
-        getEl('popup-header-title').textContent = 'Meal Log Result';
-        titleEl.textContent = item.mealName;
-        subEl.textContent = `Version ${item.version}, Slot #${item.mealIndex}`;
-        obj1Btn.textContent = '⚔️ Object D6 (Ver)';
-        obj2Btn.textContent = '⚔️ Object D20 (Slot)';
-      }
-    }
-
-    // Slot Machine Ticker Animation for Popup Objection
-    function animatePopupSlotMachine(element, finalTitle, isTakeout = false, duration = 650) {
-      const pool = isTakeout ? ALL_TAKEOUT_LIST : ALL_MEALS_LIST;
-      const startTime = performance.now();
-      element.classList.add('scale-105', 'text-gold-300');
-
-      return new Promise((resolve) => {
-        function tick(now) {
-          const elapsed = now - startTime;
-          if (elapsed < duration) {
-            const randomMeal = pool[Math.floor(Math.random() * pool.length)];
-            element.textContent = randomMeal;
-            requestAnimationFrame(tick);
-          } else {
-            element.textContent = finalTitle;
-            element.classList.remove('scale-105', 'text-gold-300');
-            resolve();
-          }
-        }
-        requestAnimationFrame(tick);
-      });
-    }
-
-    function openFatePopup(id) {
-      const item = historyLog.find(e => e.id === id);
-      if (!item) return;
-
-      selectedHistoryEntry = item;
-      updatePopupDisplay(item);
-
-      const modal = getEl('fate-popup-modal');
-      modal.classList.remove('pointer-events-none', 'opacity-0');
-      modal.querySelector('div').classList.remove('scale-95');
-      modal.querySelector('div').classList.add('scale-100');
-    }
-
-    function closeFatePopup() {
-      const modal = getEl('fate-popup-modal');
-      modal.classList.add('pointer-events-none', 'opacity-0');
-      modal.querySelector('div').classList.remove('scale-100');
-      modal.querySelector('div').classList.add('scale-95');
-    }
-
-    function applySelectedFate() {
-      if (!selectedHistoryEntry) return;
-
-      const item = selectedHistoryEntry;
-
-      if (item.type === 'TAKEOUT_ROLL' || item.type === 'TAKEOUT_OBJECTION') {
-        currentTakeoutRoll = {
-          version: item.version,
-          spotIndex: item.spotIndex,
-          restaurantName: item.restaurantName
-        };
-        getEl('d8-display').textContent = item.version;
-        getEl('modal-d6-display').textContent = item.spotIndex;
-        getEl('d8-subtext').textContent = `Category ${item.version}`;
-        getEl('modal-d6-subtext').textContent = `Option #${item.spotIndex}`;
-
-        getEl('takeout-result-title').textContent = item.restaurantName;
-        getEl('takeout-result-sub').textContent = `Category ${item.version}, Spot #${item.spotIndex}`;
-        getEl('takeout-objection-bar').classList.remove('hidden');
-
-        closeFatePopup();
-        closeHistoryDrawer();
-        openTakeoutModal();
-      } else {
-        currentMainRoll = {
-          version: item.version,
-          mealIndex: item.mealIndex,
-          mealName: item.mealName || HOME_MEALS[item.version][item.mealIndex - 1]
-        };
-        getEl('d6-display').textContent = item.version;
-        getEl('d20-display').textContent = item.mealIndex;
-        getEl('d6-subtext').textContent = `Version ${item.version} Selected`;
-        getEl('d20-subtext').textContent = `Slot #${item.mealIndex} Selected`;
-
-        getEl('result-title').textContent = currentMainRoll.mealName;
-        getEl('result-description').textContent = `Home Cooking • Menu Version ${item.version}, Slot #${item.mealIndex}`;
-        getEl('main-objection-bar').classList.remove('hidden');
-
-        closeFatePopup();
-        closeHistoryDrawer();
-
-        if (currentMainRoll.mealName === "Roll For Take-Out") {
-          openTakeoutModal();
-        }
-      }
-    }
-
-    function renderHistory() {
-      const container = getEl('history-feed');
-      const emptyMsg = getEl('history-empty');
-
-      if (!historyLog || historyLog.length === 0) {
-        container.innerHTML = '';
-        container.appendChild(emptyMsg);
-        emptyMsg.classList.remove('hidden');
-        return;
-      }
-
-      container.innerHTML = '';
-
-      historyLog.forEach(item => {
-        const card = document.createElement('div');
-        card.className = "bg-dndBg/90 border border-dndBorder/80 rounded-lg p-2.5 flex items-center justify-between shadow-sm transition-all hover:border-gold-500/40 overflow-hidden";
-
-        let badge = '';
-        let title = '';
-        let details = '';
-
-        if (item.type === 'MAIN_ROLL') {
-          badge = `<span class="px-1.5 py-0.5 text-[0.65rem] font-bold font-cinzel rounded bg-gold-500/20 text-gold-400 border border-gold-500/30 shrink-0">Main Roll</span>`;
-          title = `<span class="font-bold text-white text-xs sm:text-sm leading-tight truncate">${item.mealName}</span>`;
-          details = `<span class="text-[0.7rem] text-gray-400">D6: <strong class="text-gold-400">V${item.version}</strong> | D20: <strong class="text-gold-400">#${item.mealIndex}</strong></span>`;
-        } else if (item.type === 'MAIN_OBJECTION') {
-          badge = `<span class="px-1.5 py-0.5 text-[0.65rem] font-bold font-cinzel rounded bg-red-900/30 text-red-400 border border-red-700/40 shrink-0">⚔️ Objection</span>`;
-          title = `<span class="font-bold text-red-200 text-xs sm:text-sm leading-tight truncate">${item.mealName}</span>`;
-          details = `<span class="text-[0.7rem] text-gray-400">D6: <strong class="text-gold-400">V${item.version}</strong> | D20: <strong class="text-gold-400">#${item.mealIndex}</strong></span>`;
-        } else if (item.type === 'TAKEOUT_ROLL') {
-          badge = `<span class="px-1.5 py-0.5 text-[0.65rem] font-bold font-cinzel rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">🥡 Take-Out</span>`;
-          title = `<span class="font-bold text-amber-200 text-xs sm:text-sm leading-tight truncate">${item.restaurantName}</span>`;
-          details = `<span class="text-[0.7rem] text-gray-400">D8: <strong class="text-amber-400">Cat ${item.version}</strong> | D6: <strong class="text-amber-400">#${item.spotIndex}</strong></span>`;
-        } else if (item.type === 'TAKEOUT_OBJECTION') {
-          badge = `<span class="px-1.5 py-0.5 text-[0.65rem] font-bold font-cinzel rounded bg-red-900/30 text-red-400 border border-red-700/40 shrink-0">⚔️ Objection</span>`;
-          title = `<span class="font-bold text-red-200 text-xs sm:text-sm leading-tight truncate">${item.restaurantName}</span>`;
-          details = `<span class="text-[0.7rem] text-gray-400">D8: <strong class="text-amber-400">Cat ${item.version}</strong> | D6: <strong class="text-amber-400">#${item.spotIndex}</strong></span>`;
-        }
-
-        card.innerHTML = `
-          <div class="flex items-center space-x-2 overflow-hidden mr-2">
-            ${badge}
-            <div class="flex flex-col min-w-0">
-              ${title}
-              <div class="mt-0.5 truncate">${details}</div>
-            </div>
-          </div>
-          <button onclick="openFatePopup('${item.id}')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-dndBorder/60 hover:bg-dndBorder border border-gold-600/30 text-gold-300 transition-colors shrink-0">
-            🎯 Inspect
-          </button>
+        row.innerHTML = `
+          <span class="dice-badge">🎲 ${item.roll}</span>
+          <span class="meal-name">${item.name}</span>
+          <span class="tap-hint">›</span>
         `;
 
-        container.appendChild(card);
-      });
-    }
+        // Click handler on full card
+        row.addEventListener("click", () => openModal(item));
 
-    function animateDice(element, finalValue, duration = 600) {
-      element.classList.add('animate-dice-shake');
-      const startTime = performance.now();
-      audio.playDiceRoll();
-
-      return new Promise((resolve) => {
-        function update(currentTime) {
-          const elapsed = currentTime - startTime;
-          if (elapsed < duration) {
-            element.textContent = getRandomInt(1, 20);
-            requestAnimationFrame(update);
-          } else {
-            element.textContent = finalValue;
-            element.classList.remove('animate-dice-shake');
-            resolve();
+        // Keyboard navigation (Enter or Space)
+        row.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openModal(item);
           }
-        }
-        requestAnimationFrame(update);
+        });
+
+        fateLogContainer.appendChild(row);
       });
     }
 
-    async function executeMainRoll(forceV = null, forceM = null, isObjection = false, targetHistoryId = null) {
-      const v = forceV || getRandomInt(1, 6);
-      const m = forceM || getRandomInt(1, 20);
-
-      const d6El = getEl('d6-display');
-      const d20El = getEl('d20-display');
-
-      if (isObjection) {
-        audio.playObjection();
-      }
-
-      const newMealName = HOME_MEALS[v][m - 1];
-
-      // If objecting from inside the popup modal, animate the slot machine on the title!
-      if (targetHistoryId && getEl('fate-popup-modal').classList.contains('opacity-0') === false) {
-        const popupTitleEl = getEl('popup-result-title');
-        const slotPromise = animatePopupSlotMachine(popupTitleEl, newMealName, false, 650);
-        const dicePromise = (async () => {
-          const promises = [];
-          if (!forceV || isObjection) promises.push(animateDice(d6El, v));
-          if (!forceM || isObjection) promises.push(animateDice(d20El, m));
-          await Promise.all(promises);
-        })();
-        await Promise.all([slotPromise, dicePromise]);
-      } else {
-        const promises = [];
-        if (!forceV || isObjection) promises.push(animateDice(d6El, v));
-        if (!forceM || isObjection) promises.push(animateDice(d20El, m));
-        await Promise.all(promises);
-      }
-
-      currentMainRoll = {
-        version: v,
-        mealIndex: m,
-        mealName: newMealName
-      };
-
-      getEl('d6-subtext').textContent = `Version ${v} Selected`;
-      getEl('d20-subtext').textContent = `Slot #${m} Selected`;
-
-      const titleEl = getEl('result-title');
-      const descEl = getEl('result-description');
-
-      if (currentMainRoll.mealName === "Roll For Take-Out") {
-        titleEl.textContent = "🥡 ROLL FOR TAKE-OUT!";
-        descEl.textContent = "Fate has decreed a takeaway feast! Opening Take-Out sub-roller...";
-        audio.playCrit();
-        setTimeout(() => { openTakeoutModal(); }, 1200);
-      } else {
-        titleEl.textContent = currentMainRoll.mealName;
-        descEl.textContent = `Home Cooking • Menu Version ${v}, Slot #${m}`;
-      }
-
-      getEl('main-objection-bar').classList.remove('hidden');
-
-      const newEntryData = {
-        type: isObjection ? 'MAIN_OBJECTION' : 'MAIN_ROLL',
-        version: v,
-        mealIndex: m,
-        mealName: currentMainRoll.mealName
-      };
-
-      if (targetHistoryId) {
-        const updated = replaceHistoryEntry(targetHistoryId, newEntryData);
-        selectedHistoryEntry = updated;
-        updatePopupDisplay(updated);
-      } else if (isObjection && historyLog.length > 0) {
-        const updated = replaceHistoryEntry(historyLog[0].id, newEntryData);
-        selectedHistoryEntry = updated;
-      } else {
-        addHistoryEntry(newEntryData);
-      }
+    function openModal(item) {
+      modalRoll.textContent = `🎲 Roll: ${item.roll}`;
+      modalTitle.textContent = item.name;
+      modalDesc.textContent = item.desc;
+      modalOverlay.classList.add("active");
     }
 
-    async function executeTakeoutRoll(forceV = null, forceS = null, isObjection = false, targetHistoryId = null) {
-      const v = forceV || getRandomInt(1, 8);
-      const s = forceS || getRandomInt(1, 6);
-
-      const d8El = getEl('d8-display');
-      const d6El = getEl('modal-d6-display');
-
-      if (isObjection) audio.playObjection();
-
-      const spotName = TAKEOUT_SPOTS[v][s - 1];
-
-      // Slot machine animation in popup if triggered there
-      if (targetHistoryId && getEl('fate-popup-modal').classList.contains('opacity-0') === false) {
-        const popupTitleEl = getEl('popup-result-title');
-        const slotPromise = animatePopupSlotMachine(popupTitleEl, spotName, true, 650);
-        const dicePromise = (async () => {
-          const promises = [];
-          if (!forceV || isObjection) promises.push(animateDice(d8El, v));
-          if (!forceS || isObjection) promises.push(animateDice(d6El, s));
-          await Promise.all(promises);
-        })();
-        await Promise.all([slotPromise, dicePromise]);
-      } else {
-        const promises = [];
-        if (!forceV || isObjection) promises.push(animateDice(d8El, v));
-        if (!forceS || isObjection) promises.push(animateDice(d6El, s));
-        await Promise.all(promises);
-      }
-
-      currentTakeoutRoll = {
-        version: v,
-        spotIndex: s,
-        restaurantName: spotName
-      };
-
-      getEl('d8-subtext').textContent = `Category ${v}`;
-      getEl('modal-d6-subtext').textContent = `Option #${s}`;
-
-      getEl('takeout-result-title').textContent = spotName;
-      getEl('takeout-result-sub').textContent = `Category ${v}, Spot #${s}`;
-
-      getEl('takeout-objection-bar').classList.remove('hidden');
-
-      const newEntryData = {
-        type: isObjection ? 'TAKEOUT_OBJECTION' : 'TAKEOUT_ROLL',
-        version: v,
-        spotIndex: s,
-        restaurantName: spotName
-      };
-
-      if (targetHistoryId) {
-        const updated = replaceHistoryEntry(targetHistoryId, newEntryData);
-        selectedHistoryEntry = updated;
-        updatePopupDisplay(updated);
-      } else if (isObjection && historyLog.length > 0) {
-        const updated = replaceHistoryEntry(historyLog[0].id, newEntryData);
-        selectedHistoryEntry = updated;
-      } else {
-        addHistoryEntry(newEntryData);
-      }
+    function closeModal() {
+      modalOverlay.classList.remove("active");
     }
 
-    function openTakeoutModal() {
-      const modal = getEl('takeout-modal');
-      modal.classList.remove('pointer-events-none', 'opacity-0');
-      modal.querySelector('div').classList.remove('scale-95');
-      modal.querySelector('div').classList.add('scale-100');
-    }
-
-    function closeTakeoutModal() {
-      const modal = getEl('takeout-modal');
-      modal.classList.add('pointer-events-none', 'opacity-0');
-      modal.querySelector('div').classList.remove('scale-100');
-      modal.querySelector('div').classList.add('scale-95');
-    }
-
-    function openHistoryDrawer() {
-      renderHistory();
-      const drawer = getEl('history-drawer');
-      const panel = getEl('history-panel');
-      drawer.classList.remove('pointer-events-none', 'opacity-0');
-      panel.classList.remove('translate-x-full');
-    }
-
-    function closeHistoryDrawer() {
-      const drawer = getEl('history-drawer');
-      const panel = getEl('history-panel');
-      drawer.classList.add('pointer-events-none', 'opacity-0');
-      panel.classList.add('translate-x-full');
-    }
-
-    function renderGrimoire(tab = 'home') {
-      const container = getEl('grimoire-content');
-      container.innerHTML = '';
-
-      if (tab === 'home') {
-        for (let v = 1; v <= 6; v++) {
-          const sec = document.createElement('div');
-          sec.className = "bg-dndBg border border-dndBorder rounded-lg p-3";
-          sec.innerHTML = `
-            <h4 class="font-cinzel font-bold text-gold-400 text-xs sm:text-sm mb-2 pb-1 border-b border-dndBorder flex justify-between">
-              <span>Version ${v}</span>
-              <span class="text-[0.65rem] text-gray-500 font-sans font-normal">20 Items</span>
-            </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-              ${HOME_MEALS[v].map((m, idx) => `
-                <div class="text-xs p-1.5 rounded bg-dndCard/60 border border-dndBorder/40 flex items-center space-x-2">
-                  <span class="font-bold text-gold-500/80 w-4 shrink-0">#${idx + 1}</span>
-                  <span class="${m === 'Roll For Take-Out' ? 'text-amber-400 font-bold' : 'text-gray-300'} truncate">${m}</span>
-                </div>
-              `).join('')}
-            </div>
-          `;
-          container.appendChild(sec);
-        }
-      } else {
-        for (let v = 1; v <= 8; v++) {
-          const spots = TAKEOUT_SPOTS[v];
-          const sec = document.createElement('div');
-          sec.className = "bg-dndBg border border-dndBorder rounded-lg p-3";
-          sec.innerHTML = `
-            <h4 class="font-cinzel font-bold text-gold-400 text-xs sm:text-sm mb-2 pb-1 border-b border-dndBorder flex justify-between">
-              <span>Category ${v}</span>
-              <span class="text-[0.65rem] text-gray-500 font-sans font-normal">6 Spots</span>
-            </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-              ${spots.map((s, idx) => `
-                <div class="text-xs p-1.5 rounded bg-dndCard/60 border border-dndBorder/40 flex items-center space-x-2">
-                  <span class="font-bold text-gold-500/80 w-4 shrink-0">#${idx + 1}</span>
-                  <span class="text-gray-300 truncate">${s}</span>
-                </div>
-              `).join('')}
-            </div>
-          `;
-          container.appendChild(sec);
-        }
-      }
-    }
-
-    function openGrimoire() {
-      renderGrimoire('home');
-      const drawer = getEl('grimoire-drawer');
-      const panel = getEl('grimoire-panel');
-      drawer.classList.remove('pointer-events-none', 'opacity-0');
-      panel.classList.remove('translate-x-full');
-    }
-
-    function closeGrimoire() {
-      const drawer = getEl('grimoire-drawer');
-      const panel = getEl('grimoire-panel');
-      drawer.classList.add('pointer-events-none', 'opacity-0');
-      panel.classList.add('translate-x-full');
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      loadHistory();
-
-      getEl('main-roll-btn').addEventListener('click', () => executeMainRoll());
-
-      getEl('object-v-btn').addEventListener('click', () => executeMainRoll(null, currentMainRoll.mealIndex, true));
-      getEl('object-m-btn').addEventListener('click', () => executeMainRoll(currentMainRoll.version, null, true));
-
-      getEl('takeout-roll-btn').addEventListener('click', () => executeTakeoutRoll());
-
-      getEl('takeout-obj-cat-btn').addEventListener('click', () => executeTakeoutRoll(null, currentTakeoutRoll.spotIndex, true));
-      getEl('takeout-obj-rest-btn').addEventListener('click', () => executeTakeoutRoll(currentTakeoutRoll.version, null, true));
-
-      getEl('close-takeout-modal').addEventListener('click', closeTakeoutModal);
-
-      getEl('open-history-btn').addEventListener('click', openHistoryDrawer);
-      getEl('close-history-btn').addEventListener('click', closeHistoryDrawer);
-
-      getEl('close-fate-popup-btn').addEventListener('click', closeFatePopup);
-      getEl('popup-apply-home-btn').addEventListener('click', applySelectedFate);
-
-      getEl('popup-obj-d6-btn').addEventListener('click', () => {
-        if (!selectedHistoryEntry) return;
-        const targetId = selectedHistoryEntry.id;
-        const isTakeout = selectedHistoryEntry.type === 'TAKEOUT_ROLL' || selectedHistoryEntry.type === 'TAKEOUT_OBJECTION';
-
-        if (isTakeout) {
-          executeTakeoutRoll(null, selectedHistoryEntry.spotIndex, true, targetId);
-        } else {
-          executeMainRoll(null, selectedHistoryEntry.mealIndex, true, targetId);
-        }
-      });
-
-      getEl('popup-obj-d20-btn').addEventListener('click', () => {
-        if (!selectedHistoryEntry) return;
-        const targetId = selectedHistoryEntry.id;
-        const isTakeout = selectedHistoryEntry.type === 'TAKEOUT_ROLL' || selectedHistoryEntry.type === 'TAKEOUT_OBJECTION';
-
-        if (isTakeout) {
-          executeTakeoutRoll(selectedHistoryEntry.version, null, true, targetId);
-        } else {
-          executeMainRoll(selectedHistoryEntry.version, null, true, targetId);
-        }
-      });
-
-      getEl('open-grimoire-btn').addEventListener('click', openGrimoire);
-      getEl('close-grimoire-btn').addEventListener('click', closeGrimoire);
-
-      getEl('tab-home-meals').addEventListener('click', (e) => {
-        e.target.className = "px-3 py-1.5 text-xs font-cinzel font-bold rounded-lg bg-gold-500 text-black";
-        getEl('tab-takeout-spots').className = "px-3 py-1.5 text-xs font-cinzel font-bold rounded-lg bg-dndBorder/50 text-gray-300 hover:text-white";
-        renderGrimoire('home');
-      });
-
-      getEl('tab-takeout-spots').addEventListener('click', (e) => {
-        e.target.className = "px-3 py-1.5 text-xs font-cinzel font-bold rounded-lg bg-gold-500 text-black";
-        getEl('tab-home-meals').className = "px-3 py-1.5 text-xs font-cinzel font-bold rounded-lg bg-dndBorder/50 text-gray-300 hover:text-white";
-        renderGrimoire('takeout');
-      });
-
-      getEl('clear-history-btn').addEventListener('click', () => {
-        if (confirm("Are you sure you wish to erase the Scroll of Fate history?")) {
-          historyLog = [];
-          saveHistory();
-          renderHistory();
-        }
-      });
-
-      setupPWA();
+    closeBtn.addEventListener("click", closeModal);
+    objectBtn.addEventListener("click", () => {
+      alert(`Objection raised for: ${modalTitle.textContent}`);
+      closeModal();
     });
 
-    function setupPWA() {
-      const iconUrl = new URL("dice-twenty-faces-twenty.png", window.location.href).href;
+    // Close modal when tapping outside card
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
 
-      const manifestObj = {
-        name: "Roll for Dinner",
-        short_name: "Roll4Dinner",
-        start_url: "./index.html",
-        display: "standalone",
-        background_color: "#121216",
-        theme_color: "#121216",
-        icons: [{
-          src: iconUrl,
-          sizes: "512x512",
-          type: "image/png",
-          purpose: "any maskable"
-        }]
-      };
-      const manifestStr = JSON.stringify(manifestObj);
-      const manifestBlob = new Blob([manifestStr], { type: 'application/json' });
-      getEl('pwa-manifest').href = URL.createObjectURL(manifestBlob);
-
-      if ('serviceWorker' in navigator) {
-        const swCode = `
-          const CACHE_NAME = 'roll-for-dinner-v9';
-          self.addEventListener('install', e => {
-            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./', '${iconUrl}'])));
-          });
-          self.addEventListener('fetch', e => {
-            e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
-          });
-        `;
-        const swBlob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(swBlob);
-        navigator.serviceWorker.register(swUrl).catch(() => {});
-      }
-
-      let deferredPrompt;
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const btn = getEl('pwa-install-btn');
-        btn.classList.remove('hidden');
-        btn.addEventListener('click', () => {
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then(() => {
-            btn.classList.add('hidden');
-          });
-        });
-      });
-    }
+    renderLog();
   </script>
 
 </body>
