@@ -637,7 +637,11 @@
 
       historyLog.forEach(item => {
         const card = document.createElement('div');
-        card.className = "bg-dndBg/90 border border-dndBorder/80 rounded-lg p-2.5 flex items-center justify-between shadow-sm transition-all hover:border-gold-500/40 overflow-hidden";
+        // Entire card is now clickable, styled with hover states and text truncation
+        card.className = "bg-dndBg/90 border border-dndBorder/80 rounded-lg p-2.5 flex items-center justify-between shadow-sm transition-all hover:border-gold-500/40 cursor-pointer overflow-hidden active:scale-[0.98]";
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.onclick = () => openFatePopup(item.id);
 
         let badge = '';
         let title = '';
@@ -662,16 +666,14 @@
         }
 
         card.innerHTML = `
-          <div class="flex items-center space-x-2 overflow-hidden mr-2">
+          <div class="flex items-center space-x-2 overflow-hidden w-full">
             ${badge}
-            <div class="flex flex-col min-w-0">
+            <div class="flex flex-col min-w-0 flex-grow">
               ${title}
               <div class="mt-0.5 truncate">${details}</div>
             </div>
+            <span class="text-xs text-gold-400 opacity-60 ml-1 shrink-0">➔</span>
           </div>
-          <button onclick="openFatePopup('${item.id}')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-dndBorder/60 hover:bg-dndBorder border border-gold-600/30 text-gold-300 transition-colors shrink-0">
-            🎯 Inspect
-          </button>
         `;
 
         container.appendChild(card);
