@@ -78,10 +78,10 @@
       background-color: #121216;
       color: #e2e8f0;
       background-image: radial-gradient(circle at 50% 20%, #202231 0%, #121216 80%);
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 5px;
@@ -381,7 +381,6 @@
       8: ["Fords Garage", "Panda Express", "Buz & Ned’s Real BBQ", "China House", "Little Caesar’s", "Backwoodz BBQ"]
     };
 
-    // Flatten all meal names for slot machine ticker
     const ALL_MEALS_LIST = Object.values(HOME_MEALS).flat();
     const ALL_TAKEOUT_LIST = Object.values(TAKEOUT_SPOTS).flat();
 
@@ -532,7 +531,6 @@
       }
     }
 
-    // Slot Machine Ticker Animation for Popup Objection
     function animatePopupSlotMachine(element, finalTitle, isTakeout = false, duration = 650) {
       const pool = isTakeout ? ALL_TAKEOUT_LIST : ALL_MEALS_LIST;
       const startTime = performance.now();
@@ -637,11 +635,7 @@
 
       historyLog.forEach(item => {
         const card = document.createElement('div');
-        // Entire card is now clickable, styled with hover states and text truncation
-        card.className = "bg-dndBg/90 border border-dndBorder/80 rounded-lg p-2.5 flex items-center justify-between shadow-sm transition-all hover:border-gold-500/40 cursor-pointer overflow-hidden active:scale-[0.98]";
-        card.setAttribute('role', 'button');
-        card.setAttribute('tabindex', '0');
-        card.onclick = () => openFatePopup(item.id);
+        card.className = "bg-dndBg/90 border border-dndBorder/80 rounded-lg p-2.5 flex items-center justify-between shadow-sm transition-all hover:border-gold-500/40 overflow-hidden";
 
         let badge = '';
         let title = '';
@@ -666,14 +660,16 @@
         }
 
         card.innerHTML = `
-          <div class="flex items-center space-x-2 overflow-hidden w-full">
+          <div class="flex items-center space-x-2 overflow-hidden mr-2">
             ${badge}
-            <div class="flex flex-col min-w-0 flex-grow">
+            <div class="flex flex-col min-w-0">
               ${title}
               <div class="mt-0.5 truncate">${details}</div>
             </div>
-            <span class="text-xs text-gold-400 opacity-60 ml-1 shrink-0">➔</span>
           </div>
+          <button onclick="openFatePopup('${item.id}')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-dndBorder/60 hover:bg-dndBorder border border-gold-600/30 text-gold-300 transition-colors shrink-0">
+            🎯 Inspect
+          </button>
         `;
 
         container.appendChild(card);
@@ -714,7 +710,6 @@
 
       const newMealName = HOME_MEALS[v][m - 1];
 
-      // If objecting from inside the popup modal, animate the slot machine on the title!
       if (targetHistoryId && getEl('fate-popup-modal').classList.contains('opacity-0') === false) {
         const popupTitleEl = getEl('popup-result-title');
         const slotPromise = animatePopupSlotMachine(popupTitleEl, newMealName, false, 650);
@@ -786,7 +781,6 @@
 
       const spotName = TAKEOUT_SPOTS[v][s - 1];
 
-      // Slot machine animation in popup if triggered there
       if (targetHistoryId && getEl('fate-popup-modal').classList.contains('opacity-0') === false) {
         const popupTitleEl = getEl('popup-result-title');
         const slotPromise = animatePopupSlotMachine(popupTitleEl, spotName, true, 650);
